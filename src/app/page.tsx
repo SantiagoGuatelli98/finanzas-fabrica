@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { getDashboardData } from "@/lib/dashboard";
 import { logout } from "@/app/login/actions";
+import { CrestPhoto } from "@/components/crest-photo";
 
 function money(value: string | undefined, currency = "ARS") {
   if (value === undefined) return "—";
@@ -58,7 +59,7 @@ function Sidebar() {
         </a>)}
       </nav>
       <div className="sidebar-bottom">
-        <div className="club-note"><span className="club-symbol">H</span><span>El Globo en tu día a día.<br />Parque Patricios, siempre.</span></div>
+        <div className="club-note"><CrestPhoto className="sidebar-crest" /><span>El Globo en tu día a día.<br />Parque Patricios, siempre.</span></div>
         <form action={logout} className="logout-form"><button type="submit">Cerrar sesión <span aria-hidden="true">↗</span></button></form>
       </div>
     </aside>
@@ -96,7 +97,7 @@ async function DashboardContent() {
         <div className="content">
           <div className="page-head">
             <div><div className="eyebrow">Tu resumen financiero</div><h1>Buen día, Santiago.</h1><div className="page-subtitle">Lo importante de tu plata y tu fábrica, de un vistazo.</div></div>
-            <div className="date-chip"><Icon name="calendar" /> {today}</div>
+            <div className="page-head-aside"><CrestPhoto className="page-crest" /><div className="date-chip"><Icon name="calendar" /> {today}</div></div>
           </div>
 
           {!isConnected && <div className="connection-alert" role="status"><span>◌</span><div><strong>{"error" in data ? "No pudimos leer la base de datos" : "Falta conectar Neon"}</strong>{"error" in data ? "Revisá DATABASE_URL y que la migración esté aplicada. No mostramos datos de ejemplo." : <>Copiá <code>.env.example</code> a <code>.env.local</code>, agregá tu cadena de conexión y aplicá las migraciones. La app no usa datos de muestra.</>}</div></div>}

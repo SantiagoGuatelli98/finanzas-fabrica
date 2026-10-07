@@ -24,5 +24,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/((?!_next/|icon.svg|favicon.ico|manifest.webmanifest).*)",
+  matcher: "/((?!_next/|icon.svg|favicon.ico|manifest.webmanifest|huracan-embroidered.jpg).*)",
 };

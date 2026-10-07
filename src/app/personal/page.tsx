@@ -62,13 +62,14 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
       <div className="personal-columns">
         <section className="panel" id="nuevo-movimiento" aria-labelledby="movement-title">
           <div className="panel-heading"><div><span className="eyebrow">Anotá en segundos</span><h2 id="movement-title">Nuevo movimiento</h2></div><span className="panel-index">01</span></div>
+          <p className="section-help">Anotá acá la plata que entró o salió de tu bolsillo. Los movimientos del negocio van en «Negocio».</p>
           <form action={createPersonalTransaction} className="form-grid">
             <label>Tipo<select name="type" defaultValue={movementType} required><option value="expense">Gasto</option><option value="income">Ingreso</option></select></label>
             <label>Monto<input name="amount" inputMode="decimal" placeholder="0,00" autoComplete="off" required /></label>
             <label>Fecha<input name="occurredOn" type="date" defaultValue={today} required /></label>
-            <label>Categoría<input name="category" list="personal-categories" placeholder="Ej. Alimentos" maxLength={80} required /><datalist id="personal-categories">{configured && data.categories.map((category) => <option key={category.id} value={category.name} />)}</datalist></label>
-            <label>Origen<input name="source" placeholder="Ej. sueldo, retiro del negocio" maxLength={120} /></label>
-            <label>Medio de pago<input name="paymentMethod" list="payment-methods" placeholder="Ej. efectivo, Visa" maxLength={80} /><datalist id="payment-methods">{configured && data.paymentMethods.map((method) => <option key={method.id} value={method.name} />)}</datalist></label>
+            <label>Categoría<input name="category" list="personal-categories" placeholder="Ej. Alimentos" maxLength={80} required /><datalist id="personal-categories">{configured && data.categories.map((category) => <option key={category.id} value={category.name} />)}</datalist><small className="field-help">Para qué fue. Podés escribir una nueva.</small></label>
+            <label>Origen<input name="source" placeholder="Ej. sueldo, retiro del negocio" maxLength={120} /><small className="field-help">De dónde vino, si es un ingreso. Opcional.</small></label>
+            <label>Medio de pago<input name="paymentMethod" list="payment-methods" placeholder="Ej. efectivo, Visa" maxLength={80} /><datalist id="payment-methods">{configured && data.paymentMethods.map((method) => <option key={method.id} value={method.name} />)}</datalist><small className="field-help">Cómo cobraste o pagaste. Opcional.</small></label>
             <label className="form-wide">Descripción<input name="description" placeholder="¿Qué fue?" maxLength={500} /></label>
             <label className="form-wide">Nota opcional<textarea name="notes" rows={2} placeholder="Un detalle para recordar" maxLength={500} /></label>
             <button className="primary-button" type="submit" disabled={!configured}>Guardar movimiento <span>→</span></button>
@@ -77,6 +78,7 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
 
         <section className="panel debt-panel" id="deudas" aria-labelledby="debt-title">
           <div className="panel-heading"><div><span className="eyebrow">Prioridad personal</span><h2 id="debt-title">Deudas</h2></div><span className="panel-index">02</span></div>
+          <p className="section-help">Cargar una deuda muestra cuánto debés. La plata sale de tus gastos recién cuando registrás un pago.</p>
           <div className="debt-total"><span>Falta pagar</span><strong>{money(configured ? balanceDebt : null, currency)}</strong></div>
           <div className="debt-progress"><span style={{ width: `${originalDebt.isZero() ? 0 : Decimal.min(100, paidDebt.div(originalDebt).times(100)).toNumber()}%` }} /></div>
           <div className="debt-progress-copy">{originalDebt.isZero() ? "Agregá una deuda para empezar a seguir el progreso." : `${paidDebt.div(originalDebt).times(100).toDecimalPlaces(0).toFixed()}% cancelado · ${money(paidDebt, currency)} de ${money(originalDebt, currency)}`}</div>
@@ -108,6 +110,7 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
 
       <section className="panel emergency-panel" id="fondo-emergencia">
         <div className="panel-heading"><div><span className="eyebrow">Ahorro disponible</span><h2>Fondo de emergencia</h2></div><span className="panel-index">03</span></div>
+        <p className="section-help">Llevá el control de lo que separaste para imprevistos. Este registro no crea automáticamente un ingreso o gasto personal.</p>
         <div className="emergency-stats"><div><span>Saldo actual</span><strong>{money(configured ? emergencyBalance : null, currency)}</strong></div><div><span>Objetivo</span><strong>{money(configured ? emergencyTarget : null, currency)}</strong></div><div><span>Progreso</span><strong>{configured && emergencyTarget.isPositive() ? `${emergencyProgress.toFixed(0)}%` : "—"}</strong></div></div>
         <div className="debt-progress emergency-progress"><span style={{ width: `${emergencyProgress}%` }} /></div>
         {!emergencyTarget.isPositive() && <p className="form-hint">Configurá un objetivo en Configuración para ver el progreso.</p>}

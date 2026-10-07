@@ -35,7 +35,7 @@ export function NewOrderForm({ products, clients, requestKey, today }: { product
       <label>Cliente<select name="clientId" defaultValue="" required><option value="" disabled>Elegí un cliente</option>{clients.filter((client) => client.name).map((client) => <option value={client.id} key={client.id}>{client.name}{client.phone ? ` · ${client.phone}` : ""}</option>)}</select></label>
       <label>Fecha del pedido<input name="createdOn" type="date" defaultValue={today} required /></label>
       <label>Fecha de entrega<input name="deliveryOn" type="date" /></label>
-      <label>Descuento opcional<input name="discount" inputMode="decimal" value={discount} onChange={(event) => setDiscount(event.target.value)} /></label>
+      <label>Descuento opcional<input name="discount" inputMode="decimal" value={discount} onChange={(event) => setDiscount(event.target.value)} /><small className="field-help">Se resta del total del pedido.</small></label>
     </div>
 
     <div className="order-lines-head"><div><span className="eyebrow">Detalle</span><h3>Productos del pedido</h3></div><span className="line-count">{validLines.length} {validLines.length === 1 ? "producto" : "productos"}</span></div>

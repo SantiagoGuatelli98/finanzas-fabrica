@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { authConfigured } from "@/lib/auth-token";
 import { login } from "./actions";
+import { CrestPhoto } from "@/components/crest-photo";
 
 async function LoginContent({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
@@ -16,7 +17,7 @@ async function LoginContent({ searchParams }: { searchParams: Promise<Record<str
         <div className="login-identity-foot"><span>♦ PARQUE PATRICIOS</span><span>ROJO Y BLANCO, TODOS LOS DÍAS</span></div>
       </section>
       <section className="login-panel">
-        <div className="login-panel-inner"><span className="login-overline">Acceso personal</span><h2>Bienvenido, Santiago.</h2><p className="login-intro">Entrá para ver tus números y registrar movimientos.</p>
+        <div className="login-panel-inner"><CrestPhoto className="login-crest" /><span className="login-overline">Acceso personal</span><h2>Bienvenido, Santiago.</h2><p className="login-intro">Entrá para ver tus números y registrar movimientos.</p>
           {params.error && <p className="login-error" role="alert">Correo o contraseña incorrectos.</p>}
           {!configured && <p className="login-error" role="alert">Falta configurar el acceso en el servidor.</p>}
           <form action={login} className="login-form">

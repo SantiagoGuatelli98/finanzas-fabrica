@@ -623,3 +623,41 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .panel { padding: 18px 15px; }
   .form-grid label { font-size: 12px; }
 }
+
+.crest-photo {
+  display: block; flex: none; overflow: hidden;
+  background: #f5f2ed url("/huracan-embroidered.jpg") center 50% / 145% auto no-repeat;
+  border: 1px solid #e9e0d9; border-radius: 12px;
+}
+.sidebar-crest { width: 66px; height: 66px; border-radius: 10px; }
+.club-note { gap: 11px; }
+.club-note > span:last-child { line-height: 1.5; }
+.page-head-aside { display: flex; align-items: center; gap: 12px; }
+.page-crest { width: 70px; height: 70px; box-shadow: 0 4px 14px #35201d0d; }
+.login-crest { width: 88px; height: 88px; margin-bottom: 18px; box-shadow: 0 5px 18px #35201d10; }
+.module-head:after {
+  content: ""; width: 96px; height: 96px; top: 10px; right: 16px;
+  background: #f5f2ed url("/huracan-embroidered.jpg") center / 145% auto no-repeat;
+  border-radius: 11px; opacity: .3;
+}
+@media (max-width: 700px) {
+  .page-crest { width: 58px; height: 58px; }
+  .page-head-aside .date-chip { display: none; }
+  .login-crest { width: 72px; height: 72px; margin-bottom: 18px; }
+  .module-head:after { width: 72px; height: 72px; right: 12px; top: 14px; opacity: .22; }
+}
+
+.plain-guide { margin: 0 0 14px; padding: 17px 20px; border: 1px solid #e9d6d9; border-left: 4px solid var(--brand); border-radius: 11px; background: #fffaf9; }
+.plain-guide-title { display: block; margin-bottom: 12px; color: #a11630; font-size: 12px; letter-spacing: .02em; }
+.plain-guide-items { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.plain-guide-items p { margin: 0; font-size: 12px; line-height: 1.45; }
+.plain-guide-items b { display: block; margin-bottom: 3px; color: #362c2b; }
+.plain-guide-items span { color: #6e6461; }
+.section-help { margin: -6px 0 16px; padding-left: 11px; border-left: 2px solid #d6a5ad; color: #6f6764; font-size: 12px; line-height: 1.5; }
+.field-help { display: block; color: #817875; font-size: 11px; font-weight: 400; line-height: 1.4; }
+@media (max-width: 700px) {
+  .plain-guide { padding: 16px; }
+  .plain-guide-items { grid-template-columns: 1fr; gap: 10px; }
+  .plain-guide-items p { display: grid; grid-template-columns: 95px 1fr; gap: 7px; }
+  .plain-guide-items b { margin: 0; }
+}

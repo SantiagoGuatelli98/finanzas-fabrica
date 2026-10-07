@@ -24,6 +24,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
 
     <section className="business-columns">
       <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Catálogo editable</span><h2>Productos</h2></div><span className="panel-count">{ready ? data.products.length : 0}</span></div>
+        <p className="section-help">Guardá lo que vendés. «Unidad» es cómo lo contás (unidad, docena o kilo); el precio se propone al armar un pedido y lo podés cambiar ahí.</p>
         <form action={createProduct} className="form-grid compact-form">
           <label>Nombre<input name="name" placeholder="Nombre del producto" maxLength={120} required /></label><label>Unidad<input name="unit" placeholder="docena, unidad, kg…" maxLength={40} required /></label>
           <label>Precio actual<input name="price" inputMode="decimal" placeholder="0,00" required /></label><label>Descripción<input name="description" placeholder="Opcional" maxLength={500} /></label>
@@ -41,6 +42,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
       </div>
 
       <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Sin CRM complejo</span><h2>Clientes</h2></div><span className="panel-count">{ready ? data.clients.length : 0}</span></div>
+        <p className="section-help">Personas o negocios a quienes vendés. Después los elegís al crear un pedido.</p>
         <form action={createClient} className="form-grid compact-form">
           <label>Nombre<input name="name" placeholder="Nombre del cliente" maxLength={120} required /></label><label>WhatsApp<input name="phone" placeholder="Teléfono" maxLength={80} /></label>
           <label className="form-wide">Dirección<input name="address" placeholder="Opcional" maxLength={240} /></label>
@@ -60,6 +62,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
     </section>
 
     <section className="panel supplier-panel"><div className="panel-heading"><div><span className="eyebrow">Compras y deuda del negocio</span><h2>Proveedores</h2></div><span className="panel-count">{ready ? data.suppliers.length : 0}</span></div>
+      <p className="section-help">Son quienes te venden insumos o servicios. Los podés asociar a un gasto o a una deuda.</p>
       <form action={createSupplier} className="supplier-form">
         <label>Proveedor<input name="name" placeholder="Nombre" maxLength={120} required /></label><label>Teléfono<input name="phone" placeholder="Opcional" maxLength={80} /></label><label>Descripción<input name="description" placeholder="Opcional" maxLength={240} /></label><label>Nota<input name="notes" placeholder="Opcional" maxLength={500} /></label><button className="secondary-button" type="submit" disabled={!ready}>Agregar proveedor</button>
       </form>
@@ -67,7 +70,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
     </section>
 
     <section className="panel manual-income-panel"><div className="panel-heading"><div><span className="eyebrow">Caso excepcional</span><h2>Registrar ingreso manual</h2></div><span className="panel-index">05</span></div>
-      <p className="transfer-explainer">Usalo para un ingreso del negocio que no venga de un pedido. Los cobros de pedidos se registran desde Pedidos.</p>
+      <p className="section-help">Usalo para plata que entró al negocio fuera de un pedido. Categoría = motivo (por ejemplo, «Otro ingreso»); medio de pago = cómo la recibiste. Los cobros de pedidos se registran desde Pedidos.</p>
       <form action={createManualBusinessIncome} className="manual-income-form"><input type="hidden" name="id" value={randomUUID()} /><label>Monto<input name="amount" inputMode="decimal" placeholder="0,00" required /></label><label>Fecha<input name="occurredOn" type="date" defaultValue={today} required /></label><label>Categoría<input name="category" list="business-categories" placeholder="Categoría editable" required maxLength={80} /></label><label>Medio de pago<input name="paymentMethod" placeholder="Opcional" maxLength={80} /></label><label>Descripción<input name="description" placeholder="Origen del ingreso" required maxLength={240} /></label><label>Nota<input name="note" placeholder="Opcional" maxLength={500} /></label><button className="primary-button" type="submit" disabled={!ready}>Registrar ingreso <span>→</span></button></form>
     </section>
 
@@ -86,12 +89,13 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
 
     <section className="business-columns expense-columns">
       <div className="panel" id="nuevo-gasto"><div className="panel-heading"><div><span className="eyebrow">Salida real de caja</span><h2>Registrar gasto</h2></div><span className="panel-index">02</span></div>
+        <p className="section-help">Usalo si ya pagaste. Esto baja la caja del negocio. Si todavía debés el dinero, cargalo en «Deudas y pagos».</p>
         <form action={createBusinessExpense} className="form-grid">
           <input type="hidden" name="id" value={randomUUID()} />
           <label>Monto<input name="amount" inputMode="decimal" placeholder="0,00" required /></label><label>Fecha<input name="occurredOn" type="date" defaultValue={today} required /></label>
-          <label>Categoría<input name="category" list="business-categories" placeholder="Categoría editable" maxLength={80} required /><datalist id="business-categories">{ready && data.categories.map((category) => <option key={category.id} value={category.name} />)}</datalist></label>
+          <label>Categoría<input name="category" list="business-categories" placeholder="Ej. Insumos" maxLength={80} required /><datalist id="business-categories">{ready && data.categories.map((category) => <option key={category.id} value={category.name} />)}</datalist><small className="field-help">Para qué fue el gasto. Podés escribir una nueva.</small></label>
           <label>Proveedor<select name="supplierId" defaultValue=""><option value="">Sin proveedor</option>{ready && data.suppliers.filter((supplier) => supplier.active).map((supplier) => <option value={supplier.id} key={supplier.id}>{supplier.name}</option>)}</select></label>
-          <label>Medio de pago<input name="paymentMethod" placeholder="Efectivo, transferencia…" maxLength={80} required /></label><label>Descripción<input name="description" placeholder="¿Qué se pagó?" maxLength={240} required /></label>
+          <label>Medio de pago<input name="paymentMethod" placeholder="Efectivo, transferencia…" maxLength={80} required /><small className="field-help">Cómo salió la plata.</small></label><label>Descripción<input name="description" placeholder="¿Qué se pagó?" maxLength={240} required /></label>
           <label className="form-wide">Nota<textarea name="notes" rows={2} placeholder="Opcional" maxLength={500} /></label>
           <button className="primary-button" type="submit" disabled={!ready}>Guardar gasto <span>→</span></button>
         </form>
@@ -99,6 +103,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
       </div>
 
       <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Saldo por proveedor</span><h2>Deudas y pagos</h2></div><span className="panel-index">03</span></div>
+        <p className="section-help">Cargá lo que le debés a un proveedor. Eso registra el gasto, pero la caja baja solo cuando anotás un pago.</p>
         <form action={createSupplierDebt} className="form-grid compact-form">
           <input type="hidden" name="id" value={randomUUID()} />
           <label>Proveedor<select name="supplierId" defaultValue="" required><option value="" disabled>Elegí proveedor</option>{ready && data.suppliers.filter((supplier) => supplier.active).map((supplier) => <option value={supplier.id} key={supplier.id}>{supplier.name}</option>)}</select></label>

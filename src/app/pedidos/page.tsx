@@ -25,10 +25,12 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
     {message && <div className={`notice ${params.error ? "error" : "success"}`} role="status">{message}</div>}
     <section className="panel new-order-panel" id="nuevo-pedido">
       <div className="panel-heading"><div><span className="eyebrow">Pedido nuevo</span><h2>Crear pedido</h2></div><span className="panel-index">01</span></div>
+      <p className="section-help">Elegí cliente y productos. Guardar un pedido muestra lo vendido y lo que falta cobrar; la caja aumenta cuando registrás un cobro.</p>
       {ready ? <NewOrderForm products={data.products} clients={data.clients} requestKey={randomUUID()} today={today} /> : <p className="empty-state">Configurá la conexión con Neon para guardar pedidos.</p>}
     </section>
     <section className="panel order-list-panel" id="cuentas-por-cobrar">
       <div className="panel-heading"><div><span className="eyebrow">Historial y cuentas por cobrar</span><h2>Pedidos guardados</h2></div><span className="panel-count">{ready ? data.orders.length : 0}</span></div>
+      <p className="section-help">La etapa cuenta cómo va el trabajo: creado → enviado → confirmado → entregado. «Registrar cobro» se usa cada vez que el cliente te paga, aunque sea una parte.</p>
       {!ready || !data.orders.length ? <p className="empty-state">Todavía no hay pedidos. Cuando guardes uno, aparece acá.</p> : <div className="order-list">{data.orders.map((order) => {
         const lines = data.items.filter((item) => item.orderId === order.id);
         const received = data.payments.filter((payment) => payment.orderId === order.id).reduce((sum, payment) => sum.plus(payment.amount), new Decimal(0));
