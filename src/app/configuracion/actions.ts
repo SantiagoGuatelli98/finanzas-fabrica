@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAuth } from "@/lib/auth";
+
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -10,6 +12,7 @@ import { appSettings, categories, paymentMethods } from "@/lib/db/schema";
 const optional = (limit: number) => z.string().trim().max(limit).optional().transform((value) => value || null);
 
 export async function saveSettings(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({
     businessName: z.string().trim().max(160), businessPhone: optional(80), businessAddress: optional(240),
     businessLogoUrl: z.union([z.literal(""), z.string().url().max(500)]).optional().transform((value) => value || null),
@@ -25,6 +28,7 @@ export async function saveSettings(formData: FormData) {
 }
 
 export async function createCategory(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ scope: z.enum(["personal", "business"]), name: z.string().trim().min(1).max(80) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success) redirect("/configuracion?error=categoria");
   try { await db.insert(categories).values(parsed.data).onConflictDoNothing(); } catch { redirect("/configuracion?error=categoria"); }
@@ -32,6 +36,7 @@ export async function createCategory(formData: FormData) {
 }
 
 export async function updateCategory(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(80), active: z.enum(["true", "false"]) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success) redirect("/configuracion?error=categoria");
   try { await db.update(categories).set({ name: parsed.data.name, active: parsed.data.active === "true" }).where(eq(categories.id, parsed.data.id)); } catch { redirect("/configuracion?error=categoria"); }
@@ -39,6 +44,7 @@ export async function updateCategory(formData: FormData) {
 }
 
 export async function createPaymentMethod(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ name: z.string().trim().min(1).max(80) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success) redirect("/configuracion?error=medio");
   try { await db.insert(paymentMethods).values(parsed.data).onConflictDoNothing(); } catch { redirect("/configuracion?error=medio"); }
@@ -46,6 +52,7 @@ export async function createPaymentMethod(formData: FormData) {
 }
 
 export async function updatePaymentMethod(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(80), active: z.enum(["true", "false"]) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success) redirect("/configuracion?error=medio");
   try { await db.update(paymentMethods).set({ name: parsed.data.name, active: parsed.data.active === "true" }).where(eq(paymentMethods.id, parsed.data.id)); } catch { redirect("/configuracion?error=medio"); }

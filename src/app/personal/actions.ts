@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAuth } from "@/lib/auth";
+
 import { and, eq, isNull, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { randomUUID } from "node:crypto";
@@ -40,6 +42,7 @@ async function findOrCreatePaymentMethod(name: string) {
 }
 
 export async function createPersonalTransaction(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({
     type: z.enum(["income", "expense"]),
     amount: amountText,
@@ -76,6 +79,7 @@ export async function createPersonalTransaction(formData: FormData) {
 }
 
 export async function createPersonalDebt(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({
     name: z.string().trim().min(1).max(120),
     creditor: z.string().trim().max(120).optional().transform((value) => value || null),
@@ -96,6 +100,7 @@ export async function createPersonalDebt(formData: FormData) {
 }
 
 export async function registerDebtPayment(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({
     debtId: z.string().uuid(),
     amount: amountText,
@@ -143,6 +148,7 @@ export async function registerDebtPayment(formData: FormData) {
 }
 
 export async function adjustEmergencyFund(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ direction: z.enum(["add", "remove"]), amount: amountText, occurredOn: dateText, note: optionalText }).safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success || !db) redirect("/personal?error=fondo");
   const values = parsed.data;
@@ -161,6 +167,7 @@ export async function adjustEmergencyFund(formData: FormData) {
 }
 
 export async function createRecurringExpense(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(120), amount: amountText, category: z.string().trim().min(1).max(80), paymentMethod: z.string().trim().max(80).optional().transform((value) => value || ""), dueDay: z.coerce.number().int().min(1).max(31) }).safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success || !db || !new Decimal(parsed.data.amount).isPositive()) redirect("/personal?error=recurrente");
   const values = parsed.data;
@@ -176,6 +183,7 @@ export async function createRecurringExpense(formData: FormData) {
 }
 
 export async function updateRecurringExpense(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(120), amount: amountText, category: z.string().trim().min(1).max(80), paymentMethod: z.string().trim().max(80).optional().transform((value) => value || ""), dueDay: z.coerce.number().int().min(1).max(31), active: z.enum(["true", "false"]) }).safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success || !db || !new Decimal(parsed.data.amount).isPositive()) redirect("/personal?error=recurrente");
   const values = parsed.data;
@@ -188,6 +196,7 @@ export async function updateRecurringExpense(formData: FormData) {
 }
 
 export async function addRecurringOccurrence(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ recurringExpenseId: z.string().uuid() }).safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success || !db) redirect("/personal?error=recurrente");
   try {
@@ -199,6 +208,7 @@ export async function addRecurringOccurrence(formData: FormData) {
 }
 
 export async function markRecurringExpensePaid(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ occurrenceId: z.string().uuid(), amount: amountText, paidOn: dateText, note: optionalText }).safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success || !db || !new Decimal(parsed.data.amount).isPositive()) redirect("/personal?error=recurrente");
   const values = parsed.data;

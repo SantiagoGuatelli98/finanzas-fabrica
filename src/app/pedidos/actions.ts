@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAuth } from "@/lib/auth";
+
 import { and, eq, inArray, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { randomUUID } from "node:crypto";
@@ -27,6 +29,7 @@ async function getPaymentMethod(name: string) {
 }
 
 export async function createOrder(formData: FormData) {
+  await requireAuth();
   let rawItems: unknown;
   try { rawItems = JSON.parse(String(formData.get("itemsJson") ?? "")); } catch { redirect("/pedidos?error=lineas"); }
   const parsed = z.object({
@@ -82,6 +85,7 @@ export async function createOrder(formData: FormData) {
 }
 
 export async function registerOrderPayment(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({
     paymentId: z.string().uuid(), orderId: z.string().uuid(), amount: amountText,
     receivedOn: dateText, paymentMethod: z.string().trim().min(1).max(80), note: noteText,
@@ -127,6 +131,7 @@ const transitions: Record<string, string[]> = {
 };
 
 export async function updateOrderStage(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ orderId: z.string().uuid(), stage: z.enum(["sent", "confirmed", "delivered", "cancelled"]) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success) redirect("/pedidos?error=estado");
   try {

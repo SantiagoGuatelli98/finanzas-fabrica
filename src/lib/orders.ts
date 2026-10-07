@@ -1,8 +1,10 @@
+import { requireAuth } from "@/lib/auth";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { appSettings, clients, orderItems, orders, payments, products } from "@/lib/db/schema";
 
 export async function getOrdersData() {
+  await requireAuth();
   if (!db) return { configured: false as const };
   try {
     const [ordersRows, itemRows, paymentRows, productRows, clientRows, settingRows] = await Promise.all([
@@ -20,6 +22,7 @@ export async function getOrdersData() {
 }
 
 export async function getOrderDocument(orderId: string) {
+  await requireAuth();
   if (!db) return { configured: false as const };
   try {
     const [orderRows, itemRows, settingRows, clientRows] = await Promise.all([

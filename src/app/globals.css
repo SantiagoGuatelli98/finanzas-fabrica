@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #f7f5f2;
+  --paper: #f6f4f0;
   --surface: #fffefd;
   --ink: #252422;
   --muted: #88847f;
   --line: #e9e5df;
-  --brand: #b71936;
-  --brand-dark: #8d142a;
+  --brand: #c11330;
+  --brand-dark: #981027;
   --positive: #287659;
   --warning: #a36c20;
   --negative: #b44e42;
-  --font-ui: "Trebuchet MS", "Segoe UI", sans-serif;
+  --font-ui: "Segoe UI Variable", "Segoe UI", sans-serif;
   --font-display: Georgia, "Times New Roman", serif;
 }
 
@@ -508,4 +508,118 @@ td { padding: 11px 12px; border-top: 1px solid #f1ede8; color: #5c5751; font-siz
   .payment-inline .small-button { grid-column: 1 / -1; }
   .debt-row-main span { max-width: 200px; line-height: 1.45; }
   th, td { padding-inline: 9px; }
+}
+
+/* Daily-use refinements: clearer controls, stronger Huracán identity. */
+.sidebar { border-top: 6px solid var(--brand); }
+.brand-mark { border-radius: 50% 50% 47% 47%; box-shadow: 0 5px 16px #a30d2b25; }
+.brand-mark svg { width: 27px; height: 27px; }
+.brand-name { font-size: 19px; letter-spacing: -.045em; }
+.brand-caption { font-size: 10px; color: #a33b4c; letter-spacing: .04em; }
+.nav-link { font-size: 13px; min-height: 45px; }
+.nav-link.active { background: #f9e7eb; box-shadow: inset 3px 0 var(--brand); }
+.sidebar-bottom { border-top: 3px solid var(--brand); }
+.club-note { border-top: 0; color: #6d555a; font-size: 11px; }
+.club-symbol { border-color: var(--brand); background: var(--brand); color: white; font-family: var(--font-ui); }
+.logout-form { margin: 4px 7px 0; }
+.logout-form button { width: 100%; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: #75676a; padding: 10px 12px; font-size: 12px; cursor: pointer; }
+.logout-form button:hover, .top-logout button:hover { border-color: #d6a6af; color: var(--brand); }
+.top-logout button { border: 1px solid var(--line); border-radius: 8px; background: white; padding: 7px 10px; color: #75676a; font-size: 11px; cursor: pointer; }
+.avatar { background: #f8e4e9; color: var(--brand); }
+.main { background: linear-gradient(#fff8f8 0, var(--paper) 180px); }
+.page-head { padding-top: 34px; }
+.page-head h1 { color: #2a2022; }
+.eyebrow { color: var(--brand); font-size: 10px; }
+.cash-card { background: linear-gradient(126deg, #811426 0%, #bb1431 57%, #d12d45 100%); }
+.cash-card:before { width: 310px; height: 310px; right: -30px; top: -172px; border-width: 16px; border-color: #ffffff10; }
+.cash-card:after { width: 335px; height: 335px; right: -96px; top: -165px; border-width: 2px; border-color: #ffffff36; }
+.cash-globe { width: 116px; height: 116px; right: 26px; bottom: 34px; color: #ffffff29; }
+.quick-actions a { font-size: 12px; min-height: 43px; }
+.quick-actions a:first-child { border-color: var(--brand); background: #fff5f6; color: var(--brand); }
+.metric-card, .panel, .personal-summary article, .sold-card { box-shadow: 0 4px 20px #33220d08; }
+.metric-top, .business-label, .info-label, .card-title { font-size: 11px; }
+.metric-foot, .micro-label, .section-subtitle, .cash-caption { font-size: 11px; }
+.personal-page, .module-page { padding-top: 32px; }
+.module-head { position: relative; padding: 21px 24px 22px; background: #fff; border: 1px solid var(--line); border-left: 5px solid var(--brand); border-radius: 13px; }
+.module-head:after { content: "H"; position: absolute; top: 14px; right: 19px; color: #f5e5e8; font-family: var(--font-display); font-size: 70px; font-weight: 700; line-height: 1; pointer-events: none; }
+.module-head > * { position: relative; z-index: 1; }
+.module-head .back-link { margin-bottom: 16px; font-size: 12px; }
+.module-head p { max-width: 680px; font-size: 13px; line-height: 1.5; }
+.personal-summary span, .debt-row-main strong, .order-client strong { font-size: 12px; }
+.panel-heading .eyebrow { font-size: 10px; }
+.panel-heading h2 { font-size: 22px; }
+.form-grid label, .editable-row label, .supplier-form label, .order-notes, .payment-form label { font-size: 12px; }
+.form-grid input, .form-grid select, .form-grid textarea,
+.payment-inline input, .editable-row input, .editable-row select,
+.supplier-form input, .order-line select, .order-line input,
+.payment-form input, .add-list-form input, .simple-edit-row > input:not([type=hidden]),
+.simple-edit-row select, .order-notes textarea {
+  min-height: 40px; padding: 10px 11px; border-color: #ded9d3; font-size: 13px;
+}
+.primary-button, .secondary-button, .small-button { min-height: 40px; font-size: 12px; }
+.small-button { padding: 9px 12px; }
+.empty-state, .form-hint, .module-footnote, .transfer-explainer, .debt-progress-copy { font-size: 12px; line-height: 1.5; }
+th { font-size: 11px; }
+td { font-size: 12px; }
+.order-card-lines div, .order-card-totals span, .order-date, .order-client span { font-size: 11px; }
+.order-card-totals strong, .order-number, .stage-badge { font-size: 12px; }
+.order-document-link, .payment-details summary, .add-line { font-size: 12px; }
+.supplier-chip strong, .recent-expense strong, .supplier-debt-title strong { font-size: 12px; }
+.supplier-chip span, .recent-expense small, .supplier-debt-title span { font-size: 11px; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+.login-page { min-height: 100dvh; display: grid; place-items: center; padding: 28px; background: #f3efeb; }
+.login-shell { width: min(100%, 1020px); min-height: 590px; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; border-radius: 22px; background: #fff; box-shadow: 0 25px 90px #38252b1c; }
+.login-identity { position: relative; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 35px 39px 31px; background: linear-gradient(155deg, #9d142b 0%, #c41534 58%, #db2a45 100%); color: #fff; }
+.login-identity:before { content: ""; position: absolute; width: 500px; height: 500px; border: 23px solid #ffffff16; border-radius: 50%; right: -272px; top: 68px; }
+.login-identity:after { content: ""; position: absolute; width: 180px; height: 180px; border: 2px solid #ffffff3a; border-radius: 50%; right: 40px; bottom: 45px; }
+.login-identity > * { position: relative; z-index: 1; }
+.login-identity-top { display: flex; align-items: center; gap: 12px; font-size: 12px; font-weight: 800; letter-spacing: .16em; }
+.login-identity-top b { font-weight: 400; opacity: .6; }
+.balloon-emblem { position: relative; display: grid; place-items: center; width: 48px; height: 55px; border: 2px solid #fff; border-radius: 50% 50% 44% 44%; font-family: var(--font-ui); font-size: 24px; font-weight: 800; line-height: 1; }
+.balloon-emblem:after { content: ""; position: absolute; width: 12px; height: 8px; border: 2px solid #fff; border-top: 0; bottom: -9px; }
+.login-identity-copy { margin-top: auto; padding-bottom: 65px; }
+.login-kicker { font-size: 11px; font-weight: 800; letter-spacing: .2em; color: #ffdce2; }
+.login-identity h1 { margin: 18px 0 20px; font-family: var(--font-display); font-size: clamp(55px, 5.4vw, 74px); line-height: .94; letter-spacing: -.065em; }
+.login-identity h1 em { font-weight: 400; }
+.login-identity p { max-width: 300px; margin: 0; color: #ffe5e9; font-size: 15px; line-height: 1.6; }
+.login-identity-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; border-top: 1px solid #ffffff5e; padding-top: 17px; font-size: 9px; font-weight: 700; letter-spacing: .13em; color: #ffe3e8; }
+.login-panel { display: grid; align-items: center; padding: 44px clamp(30px, 5vw, 70px); }
+.login-panel-inner { width: 100%; max-width: 360px; margin: auto; }
+.login-overline { color: var(--brand); font-size: 11px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.login-panel h2 { margin: 14px 0 8px; color: #231e1e; font-family: var(--font-display); font-size: 35px; font-weight: 500; letter-spacing: -.04em; }
+.login-intro { margin: 0 0 30px; color: #716b68; font-size: 14px; line-height: 1.5; }
+.login-form { display: grid; gap: 16px; }
+.login-form label:not(.remember-row) { display: grid; gap: 7px; color: #514a48; font-size: 12px; font-weight: 700; }
+.login-form input:not([type=checkbox]) { width: 100%; min-height: 46px; border: 1px solid #dad3d1; border-radius: 9px; background: #fff; padding: 0 13px; color: #211c1c; font-size: 14px; outline: 0; }
+.login-form input:not([type=checkbox]):focus { border-color: var(--brand); box-shadow: 0 0 0 3px #c1133015; }
+.remember-row { display: flex; align-items: center; gap: 9px; margin: 2px 0 4px; color: #605b58; font-size: 12px; cursor: pointer; }
+.remember-row input { width: 16px; height: 16px; accent-color: var(--brand); }
+.login-form button { display: flex; align-items: center; justify-content: space-between; min-height: 48px; border: 0; border-radius: 9px; background: var(--brand); padding: 0 17px; color: white; font-size: 14px; font-weight: 700; cursor: pointer; }
+.login-form button:hover { background: var(--brand-dark); }
+.login-help { margin: 17px 0 0; color: #958d89; font-size: 11px; line-height: 1.5; }
+.login-error { border: 1px solid #ebc6cb; border-radius: 9px; background: #fff0f2; padding: 10px 12px; color: #a0162e; font-size: 12px; }
+@media (max-width: 700px) {
+  .login-page { padding: 12px; align-items: start; }
+  .login-shell { grid-template-columns: 1fr; min-height: calc(100dvh - 24px); border-radius: 15px; }
+  .login-identity { min-height: 205px; padding: 23px 25px; }
+  .login-identity:before { width: 240px; height: 240px; right: -104px; top: 20px; border-width: 12px; }
+  .login-identity:after, .login-identity-foot, .login-identity p { display: none; }
+  .login-identity-copy { padding: 25px 0 0; }
+  .login-kicker { font-size: 9px; }
+  .login-identity h1 { margin: 7px 0 0; font-size: 42px; }
+  .login-identity h1 br { display: none; }
+  .login-panel { align-items: start; padding: 30px 26px 42px; }
+  .login-panel h2 { font-size: 31px; }
+  .main { padding-bottom: 92px; }
+  .top-meta .month-pill { display: none; }
+  .top-logout { display: block; }
+  .mobile-brand .brand-mark svg { width: 20px; height: 20px; }
+  .module-page { width: calc(100% - 24px); }
+  .module-head { padding: 20px 18px; }
+  .module-head:after { font-size: 56px; }
+  .quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .quick-actions a { font-size: 11px; }
+  .panel { padding: 18px 15px; }
+  .form-grid label { font-size: 12px; }
 }

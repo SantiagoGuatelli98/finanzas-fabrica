@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { getDashboardData } from "@/lib/dashboard";
+import { logout } from "@/app/login/actions";
 
 function money(value: string | undefined, currency = "ARS") {
   if (value === undefined) return "—";
@@ -15,10 +16,9 @@ function money(value: string | undefined, currency = "ARS") {
 function GlobeMark({ className = "" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 80 80" fill="none" aria-hidden="true">
-      <circle cx="40" cy="40" r="29" stroke="currentColor" strokeWidth="1.4" />
-      <ellipse cx="40" cy="40" rx="13" ry="29" stroke="currentColor" strokeWidth="1.2" />
-      <path d="M12 31h56M12 49h56M18 22c7 5 15 7 22 7s15-2 22-7M18 58c7-5 15-7 22-7s15 2 22 7" stroke="currentColor" strokeWidth="1.1" />
-      <path d="M9 40h62" stroke="currentColor" strokeWidth="1.1" />
+      <path d="M40 7c-17 0-28 12-28 28 0 17 12 27 28 33 16-6 28-16 28-33C68 19 57 7 40 7Z" stroke="currentColor" strokeWidth="2.5" />
+      <path d="M26 25v22m28-22v22M26 36h28" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M32 64l3 8h10l3-8M35 72h10" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -49,7 +49,7 @@ function Sidebar() {
     <aside className="sidebar">
       <a className="brand" href="#inicio">
         <span className="brand-mark"><GlobeMark /></span>
-        <span><span className="brand-name">Mi Caja</span><span className="brand-caption">Personal · Fábrica</span></span>
+        <span><span className="brand-name">Mi Caja</span><span className="brand-caption">Santiago · Huracán</span></span>
       </a>
       <div className="nav-label">Espacio de trabajo</div>
       <nav className="nav-list" aria-label="Navegación principal">
@@ -58,8 +58,8 @@ function Sidebar() {
         </a>)}
       </nav>
       <div className="sidebar-bottom">
-        <div className="club-note"><span className="club-symbol">G</span><span>Rojo, blanco y claro.<br />Una identidad sutilmente quemera.</span></div>
-        <p className="privacy-note">Esta app no tiene acceso ni contraseña. Si publicás el enlace, los datos quedan visibles y editables para cualquiera.</p>
+        <div className="club-note"><span className="club-symbol">H</span><span>El Globo en tu día a día.<br />Parque Patricios, siempre.</span></div>
+        <form action={logout} className="logout-form"><button type="submit">Cerrar sesión <span aria-hidden="true">↗</span></button></form>
       </div>
     </aside>
   );
@@ -91,7 +91,7 @@ async function DashboardContent() {
         <header className="topbar">
           <div className="breadcrumb"><strong>Mi espacio</strong><span> / </span>Resumen</div>
           <a className="mobile-brand" href="#inicio"><span className="brand-mark"><GlobeMark /></span>Mi Caja</a>
-          <div className="top-meta"><span className="top-today">{today}</span><span className="month-pill">{month}</span><span className="avatar" aria-label="Espacio personal">S</span></div>
+          <div className="top-meta"><span className="top-today">{today}</span><span className="month-pill">{month}</span><form action={logout} className="top-logout"><button type="submit" aria-label="Cerrar sesión">Salir</button></form><span className="avatar" aria-label="Espacio personal">S</span></div>
         </header>
         <div className="content">
           <div className="page-head">

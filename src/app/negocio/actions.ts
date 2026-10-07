@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAuth } from "@/lib/auth";
+
 import { and, eq, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { randomUUID } from "node:crypto";
@@ -41,6 +43,7 @@ async function getPaymentMethod(name: string) {
 }
 
 export async function createProduct(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ name: z.string().trim().min(1).max(120), unit: z.string().trim().min(1).max(40), price: amountText, description: text(500) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success || new Decimal(parsed.data.price).isNegative()) redirect("/negocio?error=producto");
   try { await db.insert(products).values(parsed.data); } catch { redirect("/negocio?error=producto"); }
@@ -48,6 +51,7 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function updateProduct(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(120), unit: z.string().trim().min(1).max(40), price: amountText, description: text(500), active: z.enum(["true", "false"]) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success || new Decimal(parsed.data.price).isNegative()) redirect("/negocio?error=producto");
   const { id, active, ...values } = parsed.data;
@@ -56,6 +60,7 @@ export async function updateProduct(formData: FormData) {
 }
 
 export async function createClient(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ name: z.string().trim().min(1).max(120), phone: text(80), address: text(240), notes: text(500) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success) redirect("/negocio?error=cliente");
   try { await db.insert(clients).values(parsed.data); } catch { redirect("/negocio?error=cliente"); }
@@ -63,6 +68,7 @@ export async function createClient(formData: FormData) {
 }
 
 export async function updateClient(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(120), phone: text(80), address: text(240), notes: text(500), active: z.enum(["true", "false"]) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success) redirect("/negocio?error=cliente");
   const { id, active, ...values } = parsed.data;
@@ -71,6 +77,7 @@ export async function updateClient(formData: FormData) {
 }
 
 export async function createSupplier(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ name: z.string().trim().min(1).max(120), phone: text(80), description: text(240), notes: text(500) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success) redirect("/negocio?error=proveedor");
   try { await db.insert(suppliers).values(parsed.data); } catch { redirect("/negocio?error=proveedor"); }
@@ -78,6 +85,7 @@ export async function createSupplier(formData: FormData) {
 }
 
 export async function createBusinessExpense(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), amount: amountText, occurredOn: dateText, category: z.string().trim().min(1).max(80), supplierId: z.union([z.string().uuid(), z.literal("")]).optional().transform((value) => value || null), paymentMethod: z.string().trim().min(1).max(80), description: z.string().trim().min(1).max(240), notes: text(500) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=gasto");
   const values = parsed.data;
@@ -94,6 +102,7 @@ export async function createBusinessExpense(formData: FormData) {
 }
 
 export async function createManualBusinessIncome(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), amount: amountText, occurredOn: dateText, category: z.string().trim().min(1).max(80), paymentMethod: text(80), description: z.string().trim().min(1).max(240), note: text(500) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=ingreso");
   const values = parsed.data;
@@ -106,6 +115,7 @@ export async function createManualBusinessIncome(formData: FormData) {
 }
 
 export async function createSupplierDebt(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), supplierId: z.string().uuid(), concept: z.string().trim().min(1).max(240), amount: amountText, openedOn: dateText, category: z.string().trim().min(1).max(80), notes: text(500) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=deuda-proveedor");
   const values = parsed.data;
@@ -122,6 +132,7 @@ export async function createSupplierDebt(formData: FormData) {
 }
 
 export async function registerSupplierPayment(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), debtId: z.string().uuid(), amount: amountText, paidOn: dateText, paymentMethod: z.string().trim().min(1).max(80), note: text(500) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=pago-proveedor");
   const values = parsed.data;
@@ -143,6 +154,7 @@ export async function registerSupplierPayment(formData: FormData) {
 }
 
 export async function withdrawBusinessFunds(formData: FormData) {
+  await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), amount: amountText, occurredOn: dateText, personalCategory: z.string().trim().min(1).max(80), paymentMethod: text(80), note: text(500) }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=retiro");
   const values = parsed.data;

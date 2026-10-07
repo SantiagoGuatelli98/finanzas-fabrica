@@ -1,3 +1,4 @@
+import { requireAuth } from "@/lib/auth";
 import { and, eq, gte, lt, ne, notInArray, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { db, databaseReady } from "@/lib/db";
@@ -37,6 +38,7 @@ function total(values: (string | null)[]) {
 }
 
 export async function getDashboardData() {
+  await requireAuth();
   if (!databaseReady || !db) return { configured: false as const };
   const { start, next } = monthBounds();
 

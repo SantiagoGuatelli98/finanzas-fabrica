@@ -1,8 +1,10 @@
+import { requireAuth } from "@/lib/auth";
 import { and, desc, eq, gte, isNull, lt, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { appSettings, categories, emergencyFundEntries, paymentMethods, personalDebtPayments, personalDebts, personalTransactions, recurringExpenseOccurrences, recurringExpenses } from "@/lib/db/schema";
 
 export async function getPersonalData() {
+  await requireAuth();
   if (!db) return { configured: false as const };
   try {
     const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());

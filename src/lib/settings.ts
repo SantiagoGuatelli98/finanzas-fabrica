@@ -1,8 +1,10 @@
+import { requireAuth } from "@/lib/auth";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { appSettings, categories, paymentMethods } from "@/lib/db/schema";
 
 export async function getConfigurationData() {
+  await requireAuth();
   if (!db) return { configured: false as const };
   try {
     const [settingsRows, categoryRows, methodRows] = await Promise.all([

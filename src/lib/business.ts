@@ -1,8 +1,10 @@
+import { requireAuth } from "@/lib/auth";
 import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { appSettings, businessExpenses, categories, clients, products, supplierDebts, supplierPayments, suppliers } from "@/lib/db/schema";
 
 export async function getBusinessSetup() {
+  await requireAuth();
   if (!db) return { configured: false as const };
   try {
     const [productRows, clientRows, supplierRows, expenseRows, debtRows, supplierPaymentRows, categoryRows, settingsRows] = await Promise.all([
