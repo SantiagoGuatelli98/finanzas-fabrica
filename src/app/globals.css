@@ -514,8 +514,8 @@ td { padding: 11px 12px; border-top: 1px solid #f1ede8; color: #5c5751; font-siz
 .sidebar { border-top: 6px solid var(--brand); }
 .brand-mark { border-radius: 50% 50% 47% 47%; box-shadow: 0 5px 16px #a30d2b25; }
 .brand-mark svg { width: 27px; height: 27px; }
-.brand-name { font-size: 19px; letter-spacing: -.045em; }
-.brand-caption { font-size: 10px; color: #a33b4c; letter-spacing: .04em; }
+.brand-name { display: block; font-size: 19px; letter-spacing: -.045em; }
+.brand-caption { display: block; margin-top: 2px; font-size: 10px; color: #a33b4c; letter-spacing: .04em; }
 .nav-link { font-size: 13px; min-height: 45px; }
 .nav-link.active { background: #f9e7eb; box-shadow: inset 3px 0 var(--brand); }
 .sidebar-bottom { border-top: 3px solid var(--brand); }
