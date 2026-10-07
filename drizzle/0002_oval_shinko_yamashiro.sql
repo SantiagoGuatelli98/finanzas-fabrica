@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "payment_methods_name_idx" ON "payment_methods" USING btree ("name");

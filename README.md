@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mi Caja
 
-## Getting Started
+App personal para seguir finanzas personales y caja, pedidos, clientes, productos y proveedores de la fábrica. Stack: Next.js, TypeScript, Tailwind, Drizzle ORM y Neon PostgreSQL.
 
-First, run the development server:
+## Configuración local
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Crear una base PostgreSQL en Neon (o compatible) y copiar `.env.example` a `.env.local`.
+2. Completar `DATABASE_URL` en `.env.local`. No compartir ese archivo ni subirlo al repositorio.
+3. Instalar dependencias: `npm install`.
+4. Crear la migración si cambió el esquema y aplicarla: `npm run db:generate` y `npm run db:migrate`.
+5. Cargar categorías y productos de ejemplo opcionales: `npm run db:seed`.
+6. Iniciar: `npm run dev` y abrir `http://localhost:3000`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Sin `DATABASE_URL`, la interfaz muestra el estado de configuración pendiente y no presenta importes inventados. Las migraciones y el seed requieren una base configurada.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Acceso y datos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+La app no tiene login, usuarios ni correo. Si se publica, cualquiera que encuentre la URL puede acceder a las pantallas y ejecutar las operaciones disponibles, incluyendo registrar y modificar información. No cargar información sensible ni datos reales si la app está expuesta públicamente. Esta versión no se ha desplegado.
 
-## Learn More
+Los importes se guardan en `NUMERIC` y los cálculos monetarios usan Decimal. Cobros y pagos generan movimientos de caja enlazados; las deudas y los saldos se calculan desde pagos registrados para evitar duplicar importes. El PDF se guarda desde el diálogo de impresión del navegador.
 
-To learn more about Next.js, take a look at the following resources:
+## Alcance implementado
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Resumen general con separación entre ventas, cobros, cuentas por cobrar y efectivo disponible.
+- Registro personal de ingresos, gastos, deudas y pagos parciales; gastos recurrentes y fondo de emergencia.
+- Catálogo de productos, clientes y proveedores; gastos, ingresos de caja, deudas a proveedores y retiros personales enlazados.
+- Pedidos con líneas, historial de etapas, pagos parciales y documento compartible/descargable.
+- Configuración de datos del negocio, moneda, objetivos y categorías/medios de pago.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Las funciones que escriben datos necesitan conectividad a PostgreSQL para operar; las pantallas muestran estado vacío/error de configuración hasta entonces.
