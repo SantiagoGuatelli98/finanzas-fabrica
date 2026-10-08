@@ -18,8 +18,7 @@ async function DocumentContent({ id }: { id: string }) {
   if (!ready) return <main className="document-shell"><p>No se pudo cargar este pedido.</p></main>;
   const currency = data.settings?.currency ?? "ARS";
   const number = `PED-${String(data.order.orderNumber).padStart(6, "0")}`;
-  const messageItems = data.items.map((item) => `• Producto: ${item.productName}\n  Cantidad: ${new Decimal(item.quantity).toString()}\n  Unidad de venta: ${formatUnitLabel(item.unit, item.quantity)}\n  Precio unitario: ${money(item.unitPrice, currency)}\n  Subtotal: ${money(item.subtotal, currency)}`).join("\n\n");
-  const message = `Hola ${data.client?.name ?? data.order.clientName}, te paso el presupuesto ${number}:\n\n${messageItems}\n\nTotal: ${money(data.order.total, currency)}`;
+  const message = `Hola ${data.client?.name ?? data.order.clientName}, te paso el presupuesto ${number}.\n\nTotal: ${money(data.order.total, currency)}`;
   return <div className="document-shell">
     <div className="document-toolbar no-print"><a className="back-link" href="/pedidos">← Volver a pedidos</a><OrderDocumentActions orderNumber={number} message={message} /></div>
     {data.order.stage === "created" && <form action={updateOrderStage} className="mark-sent no-print"><input type="hidden" name="orderId" value={data.order.id} /><input type="hidden" name="stage" value="sent" /><span>Compartir no marca el pedido como enviado.</span><button className="secondary-button" type="submit">Marcar como enviado</button></form>}
