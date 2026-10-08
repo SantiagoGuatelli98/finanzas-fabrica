@@ -386,6 +386,7 @@ td { padding: 11px 12px; border-top: 1px solid #f1ede8; color: #5c5751; font-siz
 .mark-sent { display: flex; align-items: center; justify-content: flex-end; gap: 11px; width: 100%; max-width: 760px; margin: 0 auto 12px; color: #7d756d; font-size: 9px; }
 .mark-sent .secondary-button { padding: 9px 11px; }
 .order-document { width: 100%; max-width: 760px; min-height: 900px; margin: 0 auto; padding: 54px 58px 40px; background: #fff; color: #262421; box-shadow: 0 10px 34px #37312a16; }
+.order-document.image-export { width: 420px; max-width: none; min-height: 0; margin: 0; padding: 34px 24px 28px; box-shadow: none; }
 .doc-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
 .doc-header > div:first-child { display: flex; align-items: center; gap: 13px; }
 .doc-logo { width: 58px; height: 58px; object-fit: contain; }

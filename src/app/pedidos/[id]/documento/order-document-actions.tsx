@@ -9,10 +9,24 @@ export function OrderDocumentActions({ orderNumber, message }: { orderNumber: st
   const [status, setStatus] = useState("");
 
   async function makeImage() {
-    const node = document.getElementById("order-document");
-    if (!node) throw new Error("No encontramos el documento.");
-    const dataUrl = await toJpeg(node, { quality: 0.96, pixelRatio: 2, backgroundColor: "#ffffff", cacheBust: true });
-    return await (await fetch(dataUrl)).blob();
+    const source = document.getElementById("order-document");
+    if (!source) throw new Error("No encontramos el documento.");
+
+    const host = document.createElement("div");
+    host.style.cssText = "position:fixed;left:-10000px;top:0;width:420px;pointer-events:none";
+    const documentCopy = source.cloneNode(true) as HTMLElement;
+    documentCopy.removeAttribute("id");
+    documentCopy.classList.add("image-export");
+    host.append(documentCopy);
+    document.body.append(host);
+
+    try {
+      await document.fonts.ready;
+      const dataUrl = await toJpeg(documentCopy, { quality: 0.96, pixelRatio: 2, backgroundColor: "#ffffff", cacheBust: true });
+      return await (await fetch(dataUrl)).blob();
+    } finally {
+      host.remove();
+    }
   }
 
   async function downloadImage() {
