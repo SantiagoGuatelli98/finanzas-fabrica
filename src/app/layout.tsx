@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import "./globals.css";
+import { MobileQuickActions } from "@/components/mobile-quick-actions";
 
 export const metadata: Metadata = {
   title: "Mi Caja — Personal y fábrica",
@@ -18,7 +20,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es-AR">
-      <body>{children}</body>
+      <body>{children}<Suspense fallback={null}><MobileQuickActions /></Suspense></body>
     </html>
   );
 }
