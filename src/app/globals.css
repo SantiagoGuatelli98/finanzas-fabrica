@@ -791,3 +791,19 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .mobile-nav a:first-child { color: #8d867e; }
   .mobile-nav a.active { color: var(--brand); font-weight: 750; }
 }
+
+.order-save-box { display: grid; gap: 15px; padding: 20px; border: 1px solid #ead9dc; border-radius: 14px; background: #fff9f9; }
+.order-save-heading { display: grid; gap: 4px; }
+.order-save-heading strong { color: #4a292e; font-size: 16px; }
+.order-save-heading span { color: #786d6d; font-size: 12px; line-height: 1.4; }
+.order-save-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.order-save-fields label { display: grid; gap: 6px; min-width: 0; color: #6f6261; font-size: 12px; font-weight: 650; }
+.order-save-fields input, .order-save-fields select { width: 100%; min-width: 0; min-height: 46px; padding: 10px 12px; border: 1px solid #d9cec9; border-radius: 9px; background: #fff; color: var(--ink); font-size: 14px; }
+.order-save-actions { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 10px; }
+.order-save-actions .primary-button, .order-save-actions .secondary-button { grid-column: auto; min-height: 49px; margin: 0; padding: 11px 15px; font-size: 14px; }
+@media (max-width: 700px) {
+  .order-save-box { padding: 15px; }
+  .order-save-fields, .order-save-actions { grid-template-columns: 1fr; }
+  .order-save-fields input, .order-save-fields select { min-height: 49px; font-size: 16px; }
+  .order-save-actions .primary-button, .order-save-actions .secondary-button { min-height: 52px; }
+}

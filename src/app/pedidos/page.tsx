@@ -38,7 +38,7 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
     return (!query || searchText.includes(query)) && (!stageFilter || order.stage === stageFilter) && matchesPayment;
   }) : [];
   const hasFilters = Boolean(query || stageFilter || paymentFilter);
-  const message = params.error === "con-cobros" ? "Este pedido ya tiene cobros. No se borró para conservar esos movimientos; podés cancelarlo." : params.borrado ? "Pedido borrado." : params.error ? "No se pudo completar la operación. Revisá los datos y volvé a intentar." : params.creado ? "Pedido guardado. Todavía no es un ingreso ni aumentó la caja." : params.pago ? "Cobro guardado; la caja solo aumentó por el importe recibido." : params.estado ? "Estado del pedido actualizado." : "";
+  const message = params.error === "con-cobros" ? "Este pedido ya tiene cobros. No se borró para conservar esos movimientos; podés cancelarlo." : params.borrado ? "Pedido borrado." : params.error ? "No se pudo completar la operación. Revisá los datos y volvé a intentar." : params.creado === "cobrado" ? "Pedido guardado y cobrado. El total ya está registrado en caja." : params.creado ? "Pedido guardado pendiente. Todavía no aumentó la caja." : params.pago ? "Cobro guardado; la caja solo aumentó por el importe recibido." : params.estado ? "Estado del pedido actualizado." : "";
   const today = todayLocal();
   return <div className="module-page orders-page">
     <header className="module-head"><a className="back-link" href="/#inicio">← Volver al resumen</a><div className="eyebrow">Ventas y cobranzas</div><h1>Pedidos.</h1><p>Vendido no significa cobrado. Un pedido solo suma a caja cuando registrás un pago real.</p></header>
@@ -46,8 +46,8 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
     {message && <div className={`notice ${params.error ? "error" : "success"}`} role="status">{message}</div>}
     <section className="panel new-order-panel" id="nuevo-pedido">
       <div className="panel-heading"><div><span className="eyebrow">Pedido nuevo</span><h2>Crear pedido</h2></div><span className="panel-index">01</span></div>
-      <p className="section-help">Elegí cliente y productos. Guardar un pedido muestra lo vendido y lo que falta cobrar; la caja aumenta cuando registrás un cobro.</p>
-      {ready ? <NewOrderForm products={data.products} clients={data.clients} requestKey={randomUUID()} today={today} /> : <p className="empty-state">Configurá la conexión con Neon para guardar pedidos.</p>}
+      <p className="section-help">Elegí cliente y productos. Al final podés dejar el pedido pendiente o cobrar el total en el mismo paso.</p>
+      {ready ? <NewOrderForm products={data.products} clients={data.clients} paymentMethods={availablePaymentMethods} requestKey={randomUUID()} today={today} /> : <p className="empty-state">Configurá la conexión con Neon para guardar pedidos.</p>}
     </section>
     <section className="panel order-list-panel" id="cuentas-por-cobrar">
       <div className="panel-heading"><div><span className="eyebrow">Historial y cuentas por cobrar</span><h2>Pedidos guardados</h2></div><span className="panel-count">{ready ? orders.length : 0}</span></div>

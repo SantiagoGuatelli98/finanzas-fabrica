@@ -39,6 +39,9 @@ export async function createOrder(formData: FormData) {
     discount: amountText,
     notes: noteText,
     requestKey: z.string().uuid(),
+    saveMode: z.enum(["pending", "paid"]),
+    paymentMethod: z.string().trim().max(80).optional(),
+    receivedOn: z.string().optional(),
   }).safeParse(Object.fromEntries([...formData.entries()].filter(([key]) => key !== "itemsJson")));
   const itemsParsed = z.array(z.object({ productId: z.string().uuid(), quantity: quantityText, unitPrice: amountText })).min(1).max(30).safeParse(rawItems);
   if (!db || !parsed.success || !itemsParsed.success) redirect("/pedidos?error=validacion");
@@ -60,8 +63,16 @@ export async function createOrder(formData: FormData) {
   const discount = new Decimal(parsed.data.discount);
   if (discount.isNegative() || discount.gt(subtotal)) redirect("/pedidos?error=descuento");
   const total = subtotal.minus(discount).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
+  const collectNow = parsed.data.saveMode === "paid";
+  let receivedOn: string | null = null;
+  if (collectNow) {
+    const paidOn = dateText.safeParse(parsed.data.receivedOn);
+    if (!total.isPositive() || !parsed.data.paymentMethod || !paidOn.success) redirect("/pedidos?error=pago");
+    receivedOn = paidOn.data;
+  }
 
   try {
+    const paymentMethodId = collectNow ? await getPaymentMethod(parsed.data.paymentMethod!) : null;
     await db.transaction(async (tx) => {
       const [order] = await tx.insert(orders).values({
         requestKey: parsed.data.requestKey,
@@ -76,12 +87,26 @@ export async function createOrder(formData: FormData) {
         statusHistory: [{ stage: "created", at: new Date().toISOString() }],
       }).returning({ id: orders.id, orderNumber: orders.orderNumber });
       await tx.insert(orderItems).values(lines.map((line) => ({ ...line, orderId: order.id, unitPrice: line.unitPrice, subtotal: line.subtotal.toFixed(2) })));
+      if (collectNow && paymentMethodId && receivedOn) {
+        const paymentId = randomUUID();
+        const cashMovementId = randomUUID();
+        await tx.insert(businessCashMovements).values({
+          id: cashMovementId, direction: "in", amount: total.toFixed(2), occurredOn: receivedOn,
+          paymentMethodId, description: `Cobro de pedido PED-${String(order.orderNumber).padStart(6, "0")}`,
+          source: "order_payment", sourceId: paymentId,
+        });
+        await tx.insert(payments).values({
+          id: paymentId, orderId: order.id, amount: total.toFixed(2), receivedOn,
+          paymentMethodId, note: null, cashMovementId,
+        });
+      }
     });
   } catch {
     redirect("/pedidos?error=guardar");
   }
   revalidatePath("/"); revalidatePath("/pedidos");
-  redirect("/pedidos?creado=1");
+  if (collectNow) revalidatePath("/negocio");
+  redirect(collectNow ? "/pedidos?creado=cobrado" : "/pedidos?creado=1");
 }
 
 export async function registerOrderPayment(formData: FormData) {
