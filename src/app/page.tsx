@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { randomUUID } from "node:crypto";
 import { Suspense } from "react";
 import { connection } from "next/server";
@@ -6,6 +5,7 @@ import { getDashboardData } from "@/lib/dashboard";
 import { logout } from "@/app/login/actions";
 import { createManualBusinessIncome } from "@/app/negocio/actions";
 import { CrestPhoto } from "@/components/crest-photo";
+import { GlobeMark, Icon, MobileNav, Sidebar } from "@/components/workspace-navigation";
 
 function money(value: string | undefined, currency = "ARS") {
   if (value === undefined) return "—";
@@ -14,63 +14,6 @@ function money(value: string | undefined, currency = "ARS") {
     currency,
     maximumFractionDigits: 0,
   }).format(Number(value ?? 0));
-}
-
-function GlobeMark({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 80 80" fill="none" aria-hidden="true">
-      <path d="M40 7c-17 0-28 12-28 28 0 17 12 27 28 33 16-6 28-16 28-33C68 19 57 7 40 7Z" stroke="currentColor" strokeWidth="2.5" />
-      <path d="M26 25v22m28-22v22M26 36h28" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
-      <path d="M32 64l3 8h10l3-8M35 72h10" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function Icon({ name }: { name: string }) {
-  const paths: Record<string, ReactNode> = {
-    home: <><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z" /></>,
-    person: <><circle cx="12" cy="8" r="3.2" /><path d="M5 21v-1.4a7 7 0 0 1 14 0V21" /></>,
-    business: <><rect x="3" y="7" width="18" height="14" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18M10 12v2h4v-2" /></>,
-    orders: <><path d="M8 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3" /><rect x="8" y="2" width="8" height="4" rx="1" /><path d="M8 12h8M8 16h6" /></>,
-    settings: <><circle cx="12" cy="12" r="3" /><path d="m19.4 15 .1.1a1.7 1.7 0 0 1-2.4 2.4l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.2a1.7 1.7 0 0 1-3.4 0v-.2a1.7 1.7 0 0 0-2.9-1.2l-.1.1a1.7 1.7 0 0 1-2.4-2.4l.1-.1a1.7 1.7 0 0 0-1.2-2.9H4a1.7 1.7 0 0 1 0-3.4h.2a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a1.7 1.7 0 0 1 2.4-2.4l.1.1a1.7 1.7 0 0 0 2.9-1.2V4a1.7 1.7 0 0 1 3.4 0v.2a1.7 1.7 0 0 0 2.9 1.2l.1-.1a1.7 1.7 0 0 1 2.4 2.4l-.1.1a1.7 1.7 0 0 0 1.2 2.9h.2a1.7 1.7 0 0 1 0 3.4h-.2a1.7 1.7 0 0 0-1.2 2.9Z" /></>,
-    calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
-    trend: <><path d="M3 17 9 11l4 4 8-9" /><path d="M15 6h6v6" /></>,
-    wallet: <><rect x="3" y="5" width="18" height="15" rx="2" /><path d="M3 8h15a3 3 0 0 1 3 3v1h-5a2 2 0 0 0 0 4h5" /><path d="M17 14h.01" /></>,
-  };
-  return <svg aria-hidden="true" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>;
-}
-
-function Sidebar() {
-  const nav = [
-    ["Inicio", "#inicio", "home"],
-    ["Personal", "/personal", "person"],
-    ["Negocio", "/negocio", "business"],
-    ["Pedidos", "/pedidos", "orders"],
-    ["Configuración", "/configuracion", "settings"],
-  ];
-  return (
-    <aside className="sidebar">
-      <a className="brand" href="#inicio">
-        <span className="brand-mark"><GlobeMark /></span>
-        <span><span className="brand-name">Mi Caja</span><span className="brand-caption">Santiago · Huracán</span></span>
-      </a>
-      <div className="nav-label">Espacio de trabajo</div>
-      <nav className="nav-list" aria-label="Navegación principal">
-        {nav.map(([label, href, icon], index) => <a className={`nav-link ${index === 0 ? "active" : ""}`} href={href} key={label}>
-          <span className="nav-icon"><Icon name={icon} /></span>{label}
-        </a>)}
-      </nav>
-      <div className="sidebar-bottom">
-        <div className="club-note"><CrestPhoto className="sidebar-crest" /><span>El Globo en tu día a día.<br />Parque Patricios, siempre.</span></div>
-        <form action={logout} className="logout-form"><button type="submit">Cerrar sesión <span aria-hidden="true">↗</span></button></form>
-      </div>
-    </aside>
-  );
-}
-
-function MobileNav() {
-  const nav = [["Inicio", "#inicio", "home"], ["Personal", "/personal", "person"], ["Negocio", "/negocio", "business"], ["Pedidos", "/pedidos", "orders"], ["Más", "/configuracion", "settings"]];
-  return <nav className="mobile-nav" aria-label="Navegación móvil">{nav.map(([label, href, icon]) => <a href={href} key={label}><Icon name={icon} /><span>{label}</span></a>)}</nav>;
 }
 
 function Metric({ title, value, foot, kind = "" }: { title: string; value: string; foot: string; kind?: string }) {
@@ -93,7 +36,7 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Record
 
   return (
     <div className="app" id="inicio">
-      <Sidebar />
+      <Sidebar active="home" />
       <main className="main">
         <header className="topbar">
           <div className="breadcrumb"><strong>Mi espacio</strong><span> / </span>Resumen</div>
@@ -190,13 +133,13 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Record
           <footer className="footer">Mi Caja · Finanzas personales y fábrica · {currency}</footer>
         </div>
       </main>
-      <MobileNav />
+      <MobileNav active="home" />
     </div>
   );
 }
 
 function DashboardFallback() {
-  return <div className="app" id="inicio"><Sidebar /><main className="main"><header className="topbar"><span>Mi espacio / Resumen</span></header><div className="content"><div className="page-head"><div><div className="eyebrow">Tu resumen financiero</div><h1>Buen día, Santiago.</h1><div className="page-subtitle">Cargando tus datos guardados…</div></div></div></div></main><MobileNav /></div>;
+  return <div className="app" id="inicio"><Sidebar active="home" /><main className="main"><header className="topbar"><span>Mi espacio / Resumen</span></header><div className="content"><div className="page-head"><div><div className="eyebrow">Tu resumen financiero</div><h1>Buen día, Santiago.</h1><div className="page-subtitle">Cargando tus datos guardados…</div></div></div></div></main><MobileNav active="home" /></div>;
 }
 
 export default function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

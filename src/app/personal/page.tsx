@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import Decimal from "decimal.js";
 import { addRecurringOccurrence, adjustEmergencyFund, createPersonalDebt, createPersonalTransaction, createRecurringExpense, markRecurringExpensePaid, registerDebtPayment, updateRecurringExpense } from "./actions";
 import { getPersonalData } from "@/lib/personal";
+import { WorkspaceFrame } from "@/components/workspace-navigation";
 
 function money(value: Decimal.Value | null, currency = "ARS") {
   if (value === null) return "—";
@@ -153,6 +154,6 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
 }
 
 export default function PersonalPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  return <Suspense fallback={<main className="personal-page"><p className="page-subtitle">Cargando tus finanzas…</p></main>}><PersonalContent searchParams={searchParams} /></Suspense>;
+  return <WorkspaceFrame active="personal"><Suspense fallback={<div className="personal-page"><p className="page-subtitle">Cargando tus finanzas…</p></div>}><PersonalContent searchParams={searchParams} /></Suspense></WorkspaceFrame>;
 }
 

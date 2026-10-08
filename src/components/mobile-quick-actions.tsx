@@ -26,6 +26,7 @@ export function MobileQuickActions() {
   if (pathname === "/login") return null;
 
   const canGoBack = pathname !== "/" || routeStack.current.length > 1;
+  const hasTabs = ["/", "/personal", "/negocio", "/pedidos", "/configuracion"].includes(pathname);
   const fallback = pathname.startsWith("/pedidos/") ? "/pedidos" : "/#inicio";
 
   function goBack() {
@@ -48,7 +49,7 @@ export function MobileQuickActions() {
   }
 
   return (
-    <nav className="mobile-quick-nav" data-on-home={pathname === "/"} data-can-go-back={canGoBack} aria-label="Acciones de navegación">
+    <nav className="mobile-quick-nav" data-has-tabs={hasTabs} data-can-go-back={canGoBack} aria-label="Acciones de navegación">
       {canGoBack && <button type="button" onClick={goBack} aria-label="Volver a la sección anterior" title="Volver">
         <svg viewBox="0 0 24 24" aria-hidden="true"><ActionIcon name="back" /></svg><span>Volver</span>
       </button>}

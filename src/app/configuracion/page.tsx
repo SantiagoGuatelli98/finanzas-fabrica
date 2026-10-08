@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { createCategory, createPaymentMethod, saveSettings, updateCategory, updatePaymentMethod } from "./actions";
 import { getConfigurationData } from "@/lib/settings";
 import { PlainGuide } from "@/components/plain-guide";
+import { WorkspaceFrame } from "@/components/workspace-navigation";
 
 async function SettingsContent({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
@@ -51,5 +52,5 @@ async function SettingsContent({ searchParams }: { searchParams: Promise<Record<
 }
 
 export default function SettingsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  return <Suspense fallback={<main className="module-page">Cargando configuración…</main>}><SettingsContent searchParams={searchParams} /></Suspense>;
+  return <WorkspaceFrame active="settings"><Suspense fallback={<div className="module-page">Cargando configuración…</div>}><SettingsContent searchParams={searchParams} /></Suspense></WorkspaceFrame>;
 }

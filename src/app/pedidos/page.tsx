@@ -7,6 +7,7 @@ import { DeleteOrderForm } from "./delete-order-form";
 import { NewOrderForm } from "./new-order-form";
 import { getOrdersData } from "@/lib/orders";
 import { formatUnitLabel } from "@/lib/order-format";
+import { WorkspaceFrame } from "@/components/workspace-navigation";
 
 function money(value: Decimal.Value, currency = "ARS") { return new Intl.NumberFormat("es-AR", { style: "currency", currency, maximumFractionDigits: 2 }).format(Number(value)); }
 function todayLocal() { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
@@ -23,7 +24,10 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
   const query = typeof params.q === "string" ? params.q.trim().toLocaleLowerCase("es-AR") : "";
   const stageFilter = typeof params.etapa === "string" ? params.etapa : "";
   const paymentFilter = typeof params.cobro === "string" ? params.cobro : "";
-  const availablePaymentMethods = ready && data.paymentMethods.length ? data.paymentMethods.map((method) => method.name) : defaultPaymentMethods;
+  const availablePaymentMethods = Array.from(new Set([
+    ...defaultPaymentMethods,
+    ...(ready ? data.paymentMethods.map((method) => method.name) : []),
+  ]));
   const orders = ready ? data.orders.filter((order) => {
     const lines = data.items.filter((item) => item.orderId === order.id);
     const received = data.payments.filter((payment) => payment.orderId === order.id).reduce((sum, payment) => sum.plus(payment.amount), new Decimal(0));
@@ -80,5 +84,5 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
 }
 
 export default function OrdersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  return <Suspense fallback={<main className="module-page">Cargando pedidos…</main>}><OrdersContent searchParams={searchParams} /></Suspense>;
+  return <WorkspaceFrame active="orders"><Suspense fallback={<div className="module-page">Cargando pedidos…</div>}><OrdersContent searchParams={searchParams} /></Suspense></WorkspaceFrame>;
 }

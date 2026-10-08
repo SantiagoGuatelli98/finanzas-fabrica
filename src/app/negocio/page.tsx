@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import Decimal from "decimal.js";
 import { createBusinessExpense, createClient, createManualBusinessIncome, createProduct, createSupplier, createSupplierDebt, registerSupplierPayment, updateClient, updateProduct, withdrawBusinessFunds } from "./actions";
 import { getBusinessSetup } from "@/lib/business";
+import { WorkspaceFrame } from "@/components/workspace-navigation";
 
 function money(value: Decimal.Value | string, currency = "ARS") { return new Intl.NumberFormat("es-AR", { style: "currency", currency, maximumFractionDigits: 2 }).format(Number(value)); }
 function todayLocal() { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
@@ -128,5 +129,5 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
 }
 
 export default function BusinessPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  return <Suspense fallback={<main className="personal-page">Cargando configuración del negocio…</main>}><BusinessContent searchParams={searchParams} /></Suspense>;
+  return <WorkspaceFrame active="business"><Suspense fallback={<div className="personal-page">Cargando configuración del negocio…</div>}><BusinessContent searchParams={searchParams} /></Suspense></WorkspaceFrame>;
 }
