@@ -47,8 +47,8 @@ export function NewOrderForm({ products, clients, requestKey, today }: { product
         <label><span className="line-mobile-label">Producto</span><select value={line.productId} onChange={(event) => {
           const product = products.find((entry) => entry.id === event.target.value);
           updateLine(line.key, { productId: event.target.value, unitPrice: product?.price ?? "0" });
-        }}><option value="">Elegí un producto</option>{products.filter((product) => product.id === line.productId || !lines.some((other) => other.productId === product.id)).map((product) => <option value={product.id} key={product.id}>{product.name} · {product.unit}</option>)}</select></label>
-        <label><span className="line-mobile-label">Cantidad {selectedProduct ? `(${selectedProduct.unit})` : ""}</span><input inputMode="decimal" value={line.quantity} onChange={(event) => updateLine(line.key, { quantity: event.target.value })} /></label>
+        }}><option value="">Elegí un producto</option>{products.filter((product) => product.id === line.productId || !lines.some((other) => other.productId === product.id)).map((product) => <option value={product.id} key={product.id}>{product.name} · Unidad de venta: {product.unit}</option>)}</select></label>
+        <label><span className="line-mobile-label">Cantidad</span><input inputMode="decimal" value={line.quantity} onChange={(event) => updateLine(line.key, { quantity: event.target.value })} />{selectedProduct && <small className="line-unit-help">Unidad de venta: {selectedProduct.unit}</small>}</label>
         <label><span className="line-mobile-label">Precio unitario</span><input inputMode="decimal" value={line.unitPrice} onChange={(event) => updateLine(line.key, { unitPrice: event.target.value })} /></label>
         <div className="line-subtotal"><span className="line-mobile-label">Subtotal</span>{money(lineSubtotal)}</div>
         <button type="button" className="remove-line" aria-label="Quitar producto" disabled={lines.length === 1} onClick={() => setLines((current) => current.filter((entry) => entry.key !== line.key))}>×</button>

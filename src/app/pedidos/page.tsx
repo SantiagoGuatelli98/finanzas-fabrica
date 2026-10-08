@@ -6,7 +6,7 @@ import { registerOrderPayment, updateOrderStage } from "./actions";
 import { DeleteOrderForm } from "./delete-order-form";
 import { NewOrderForm } from "./new-order-form";
 import { getOrdersData } from "@/lib/orders";
-import { formatQuantityUnit } from "@/lib/order-format";
+import { formatUnitLabel } from "@/lib/order-format";
 
 function money(value: Decimal.Value, currency = "ARS") { return new Intl.NumberFormat("es-AR", { style: "currency", currency, maximumFractionDigits: 2 }).format(Number(value)); }
 function todayLocal() { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
@@ -26,7 +26,8 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
     const lines = data.items.filter((item) => item.orderId === order.id);
     const received = data.payments.filter((payment) => payment.orderId === order.id).reduce((sum, payment) => sum.plus(payment.amount), new Decimal(0));
     const outstanding = Decimal.max(0, new Decimal(order.total).minus(received));
-    const searchText = [order.clientName, String(order.orderNumber), order.notes ?? "", ...lines.map((item) => item.productName)].join(" ").toLocaleLowerCase("es-AR");
+    const orderLabel = `PED-${String(order.orderNumber).padStart(6, "0")}`;
+    const searchText = [order.clientName, String(order.orderNumber), orderLabel, order.notes ?? "", ...lines.map((item) => item.productName)].join(" ").toLocaleLowerCase("es-AR");
     const matchesPayment = paymentFilter === "pagado" ? outstanding.isZero() : paymentFilter === "parcial" ? received.isPositive() && outstanding.isPositive() : paymentFilter === "pendiente" ? outstanding.isPositive() : true;
     return (!query || searchText.includes(query)) && (!stageFilter || order.stage === stageFilter) && matchesPayment;
   }) : [];
@@ -62,7 +63,7 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
         return <article className="order-card" key={order.id}>
           <div className="order-card-top"><div><span className="order-number">PED-{String(order.orderNumber).padStart(6, "0")}</span><span className="order-date">{dateLabel(order.createdOn)}</span></div><span className={`stage-badge stage-${order.stage}`}>{stageLabels[order.stage]}</span></div>
           <div className="order-client"><strong>{order.clientName}</strong><span>{payStatus}</span></div>
-          <div className="order-card-lines">{lines.map((item) => <div key={item.id}><span><strong>Cantidad:</strong> {formatQuantityUnit(item.quantity, item.unit)} <i>—</i> {item.productName}</span><span>{money(item.subtotal, currency)}</span></div>)}</div>
+          <div className="order-card-lines">{lines.map((item) => <div key={item.id}><span><strong>{item.productName}</strong><small><b>Cantidad:</b> {new Decimal(item.quantity).toString()} <i>·</i> <b>Unidad de venta:</b> {formatUnitLabel(item.unit, item.quantity)}</small></span><span>{money(item.subtotal, currency)}</span></div>)}</div>
           <div className="order-card-totals"><div><span>Total vendido</span><strong>{money(order.total, currency)}</strong></div><div><span>Cobrado</span><strong>{money(received, currency)}</strong></div><div><span>Saldo pendiente</span><strong className={outstanding.isPositive() ? "pending-amount" : "amount-in"}>{money(outstanding, currency)}</strong></div></div>
           <div className="order-card-actions">
             <a className="order-document-link" href={`/pedidos/${order.id}/documento`}>Documento y compartir</a>

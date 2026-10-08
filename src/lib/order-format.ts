@@ -4,6 +4,7 @@ export function formatUnitLabel(unit: string, quantity: Decimal.Value = 1) {
   const trimmed = unit.trim();
   const normalized = trimmed.toLocaleLowerCase("es-AR");
   const amount = new Decimal(quantity);
+  if (/^\d+\s/.test(trimmed)) return trimmed;
   const aliases: Record<string, string> = {
     doc: "docena", "doc.": "docena", docena: "docena", docenas: "docena",
     unid: "unidad", ud: "unidad", uds: "unidad", unidad: "unidad", unidades: "unidad",
@@ -20,8 +21,4 @@ export function formatUnitLabel(unit: string, quantity: Decimal.Value = 1) {
   if (normalized.endsWith("s")) return trimmed;
   if (normalized.endsWith("z")) return `${trimmed.slice(0, -1)}ces`;
   return `${trimmed}s`;
-}
-
-export function formatQuantityUnit(quantity: Decimal.Value, unit: string) {
-  return `${new Decimal(quantity).toString()} ${formatUnitLabel(unit, quantity)}`;
 }
