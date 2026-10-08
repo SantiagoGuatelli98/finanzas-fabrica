@@ -1,21 +1,22 @@
 import { requireAuth } from "@/lib/auth";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { appSettings, clients, orderItems, orders, payments, products } from "@/lib/db/schema";
+import { appSettings, clients, orderItems, orders, paymentMethods, payments, products } from "@/lib/db/schema";
 
 export async function getOrdersData() {
   await requireAuth();
   if (!db) return { configured: false as const };
   try {
-    const [ordersRows, itemRows, paymentRows, productRows, clientRows, settingRows] = await Promise.all([
+    const [ordersRows, itemRows, paymentRows, productRows, clientRows, settingRows, methodRows] = await Promise.all([
       db.select().from(orders).orderBy(desc(orders.createdOn), desc(orders.createdAt)),
       db.select().from(orderItems),
       db.select().from(payments),
       db.select().from(products).where(eq(products.active, true)).then((rows) => rows.filter((product) => Number(product.price) > 0)),
       db.select().from(clients).where(eq(clients.active, true)),
       db.select({ currency: appSettings.currency }).from(appSettings).limit(1),
+      db.select({ name: paymentMethods.name }).from(paymentMethods).where(eq(paymentMethods.active, true)).orderBy(asc(paymentMethods.name)),
     ]);
-    return { configured: true as const, orders: ordersRows, items: itemRows, payments: paymentRows, products: productRows, clients: clientRows, currency: settingRows[0]?.currency ?? "ARS" };
+    return { configured: true as const, orders: ordersRows, items: itemRows, payments: paymentRows, products: productRows, clients: clientRows, paymentMethods: methodRows, currency: settingRows[0]?.currency ?? "ARS" };
   } catch {
     return { configured: true as const, error: true as const };
   }

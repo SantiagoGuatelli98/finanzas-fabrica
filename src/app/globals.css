@@ -725,7 +725,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .order-card-actions .secondary-button, .order-document-link, .payment-details summary { min-height: 48px; display: inline-flex; align-items: center; padding-inline: 13px; font-size: 13px; }
   .payment-details summary { padding-inline: 0; }
   .payment-form { gap: 10px; padding: 12px; }
-  .payment-form input { min-height: 48px; font-size: 15px; }
+  .payment-form input, .payment-form select { min-height: 48px; font-size: 15px; }
   .payment-form .primary-button { min-height: 50px; }
   .order-card-lines div { align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.45; }
   .order-card-lines div > span:first-child { overflow-wrap: anywhere; }

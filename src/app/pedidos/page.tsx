@@ -13,6 +13,7 @@ function todayLocal() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Ame
 function dateLabel(value: string) { return new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date(`${value}T12:00:00-03:00`)); }
 const stageLabels: Record<string, string> = { created: "Creado", sent: "Enviado", confirmed: "Confirmado", delivered: "Entregado", cancelled: "Cancelado" };
 const stageNext: Record<string, string | null> = { created: "sent", sent: "confirmed", confirmed: "delivered", delivered: null, cancelled: null };
+const defaultPaymentMethods = ["Efectivo", "Transferencia", "Mercado Pago", "Débito", "Crédito"];
 
 async function OrdersContent({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
@@ -22,13 +23,14 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
   const query = typeof params.q === "string" ? params.q.trim().toLocaleLowerCase("es-AR") : "";
   const stageFilter = typeof params.etapa === "string" ? params.etapa : "";
   const paymentFilter = typeof params.cobro === "string" ? params.cobro : "";
+  const availablePaymentMethods = ready && data.paymentMethods.length ? data.paymentMethods.map((method) => method.name) : defaultPaymentMethods;
   const orders = ready ? data.orders.filter((order) => {
     const lines = data.items.filter((item) => item.orderId === order.id);
     const received = data.payments.filter((payment) => payment.orderId === order.id).reduce((sum, payment) => sum.plus(payment.amount), new Decimal(0));
     const outstanding = Decimal.max(0, new Decimal(order.total).minus(received));
     const orderLabel = `PED-${String(order.orderNumber).padStart(6, "0")}`;
     const searchText = [order.clientName, String(order.orderNumber), orderLabel, order.notes ?? "", ...lines.map((item) => item.productName)].join(" ").toLocaleLowerCase("es-AR");
-    const matchesPayment = paymentFilter === "pagado" ? outstanding.isZero() : paymentFilter === "parcial" ? received.isPositive() && outstanding.isPositive() : paymentFilter === "pendiente" ? outstanding.isPositive() : true;
+    const matchesPayment = paymentFilter === "cancelado" ? order.stage === "cancelled" : paymentFilter === "cobrado" || paymentFilter === "pagado" ? order.stage !== "cancelled" && outstanding.isZero() : paymentFilter === "parcial" ? order.stage !== "cancelled" && received.isPositive() && outstanding.isPositive() : paymentFilter === "pendiente" ? order.stage !== "cancelled" && received.isZero() : true;
     return (!query || searchText.includes(query)) && (!stageFilter || order.stage === stageFilter) && matchesPayment;
   }) : [];
   const hasFilters = Boolean(query || stageFilter || paymentFilter);
@@ -49,7 +51,7 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
       <form className="order-filters" method="get" action="/pedidos">
         <label className="order-search">Buscar<input type="search" name="q" defaultValue={typeof params.q === "string" ? params.q : ""} placeholder="Cliente, producto o número" /></label>
         <label>Etapa<select name="etapa" defaultValue={stageFilter}><option value="">Todas</option>{Object.entries(stageLabels).map(([key, label]) => <option value={key} key={key}>{label}</option>)}</select></label>
-        <label>Cobro<select name="cobro" defaultValue={paymentFilter}><option value="">Todos</option><option value="pendiente">Pendiente</option><option value="parcial">Parcial</option><option value="pagado">Pagado</option></select></label>
+        <label>Cobro<select name="cobro" defaultValue={paymentFilter}><option value="">Todos</option><option value="pendiente">Pendiente</option><option value="parcial">Parcial</option><option value="cobrado">Cobrado</option><option value="cancelado">Cancelado</option></select></label>
         <button className="secondary-button" type="submit">Filtrar</button>
         {hasFilters && <a className="clear-order-filters" href="/pedidos#cuentas-por-cobrar">Limpiar</a>}
       </form>
@@ -58,7 +60,7 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
         const lines = data.items.filter((item) => item.orderId === order.id);
         const received = data.payments.filter((payment) => payment.orderId === order.id).reduce((sum, payment) => sum.plus(payment.amount), new Decimal(0));
         const outstanding = Decimal.max(0, new Decimal(order.total).minus(received));
-        const payStatus = outstanding.isZero() ? "Pagado" : received.isZero() ? "Sin cobrar" : "Pago parcial";
+        const payStatus = order.stage === "cancelled" ? "Cancelado" : outstanding.isZero() ? "Cobrado" : received.isZero() ? "Pendiente" : "Parcial";
         const next = stageNext[order.stage];
         return <article className="order-card" key={order.id}>
           <div className="order-card-top"><div><span className="order-number">PED-{String(order.orderNumber).padStart(6, "0")}</span><span className="order-date">{dateLabel(order.createdOn)}</span></div><span className={`stage-badge stage-${order.stage}`}>{stageLabels[order.stage]}</span></div>
@@ -68,7 +70,7 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
           <div className="order-card-actions">
             <a className="order-document-link" href={`/pedidos/${order.id}/documento`}>Documento y compartir</a>
             {next && <form action={updateOrderStage}><input type="hidden" name="orderId" value={order.id} /><input type="hidden" name="stage" value={next} /><button className="secondary-button" type="submit">Marcar {stageLabels[next].toLowerCase()}</button></form>}
-            {order.stage !== "cancelled" && outstanding.isPositive() && <details className="payment-details"><summary>Registrar cobro</summary><form action={registerOrderPayment} className="payment-form"><input type="hidden" name="paymentId" value={randomUUID()} /><input type="hidden" name="orderId" value={order.id} /><label>Monto<input name="amount" inputMode="decimal" placeholder="Importe recibido" required /></label><label>Fecha<input name="receivedOn" type="date" defaultValue={today} required /></label><label>Medio de pago<input name="paymentMethod" placeholder="Efectivo, transferencia…" required maxLength={80} /></label><label>Nota<input name="note" placeholder="Opcional" maxLength={500} /></label><button className="primary-button" type="submit">Guardar cobro <span>→</span></button></form></details>}
+            {order.stage !== "cancelled" && outstanding.isPositive() && <details className="payment-details"><summary>Registrar cobro</summary><form action={registerOrderPayment} className="payment-form"><input type="hidden" name="paymentId" value={randomUUID()} /><input type="hidden" name="orderId" value={order.id} /><label>Importe recibido<input name="amount" inputMode="decimal" defaultValue={outstanding.toFixed(2)} required /></label><label>Fecha<input name="receivedOn" type="date" defaultValue={today} required /></label><label>Medio de pago<select name="paymentMethod" defaultValue={availablePaymentMethods[0]} required>{availablePaymentMethods.map((method) => <option value={method} key={method}>{method}</option>)}</select></label><label>Nota<input name="note" placeholder="Opcional" maxLength={500} /></label><button className="primary-button" type="submit">Guardar cobro <span>→</span></button></form></details>}
             {received.isZero() && <DeleteOrderForm orderId={order.id} />}
           </div>
         </article>;
