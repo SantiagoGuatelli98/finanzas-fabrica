@@ -30,26 +30,21 @@ export function OrderDocumentActions({ orderNumber, message }: { orderNumber: st
 
   async function shareWhatsApp() {
     setBusy(true); setStatus("");
+    window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
     try {
-      if ("share" in navigator && "canShare" in navigator) {
-        const blob = await makeImage();
-        const file = new File([blob], `${orderNumber}.jpg`, { type: "image/jpeg" });
-        if (navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], text, title: orderNumber });
-          setStatus("El pedido se compartió desde el menú del dispositivo. Eso no modifica su estado.");
-          return;
-        }
-      }
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
-      setStatus("WhatsApp abrió el mensaje editable. Adjuntá la imagen descargada si hace falta.");
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") setStatus("No se compartió el pedido.");
-      else setStatus("No se pudo abrir el menú para compartir.");
+      const blob = await makeImage();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url; anchor.download = `${orderNumber}.jpg`; anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setStatus("WhatsApp Web abrió el mensaje. Adjuntá la boleta descargada y tocá Enviar.");
+    } catch {
+      setStatus("WhatsApp Web abrió el mensaje. No se pudo descargar la boleta; probá «Descargar imagen».");
     } finally { setBusy(false); }
   }
 
   return <div className="document-actions">
-    <div className="document-action-buttons"><button type="button" className="doc-button red" onClick={shareWhatsApp} disabled={busy}>{busy ? "Preparando…" : "Compartir por WhatsApp"}</button><button type="button" className="doc-button" onClick={() => window.print()}>Imprimir / guardar PDF</button><button type="button" className="doc-button" onClick={downloadImage} disabled={busy}>Descargar imagen</button></div>
+    <div className="document-action-buttons"><button type="button" className="doc-button red" onClick={shareWhatsApp} disabled={busy}>{busy ? "Preparando…" : "Abrir WhatsApp Web"}</button><button type="button" className="doc-button" onClick={() => window.print()}>Imprimir / guardar PDF</button><button type="button" className="doc-button" onClick={downloadImage} disabled={busy}>Descargar imagen</button></div>
     <label className="message-editor">Mensaje para WhatsApp<textarea value={text} onChange={(event) => setText(event.target.value)} rows={5} /></label>
     {status && <p className="share-status" role="status">{status}</p>}
   </div>;
