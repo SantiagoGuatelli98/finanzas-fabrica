@@ -17,7 +17,7 @@ export function formatUnitLabel(unit: string, quantity: Decimal.Value = 1) {
     if (normalized.endsWith("s")) return trimmed.slice(0, -1);
     return singular;
   }
-  if (aliases[normalized]) return `${singular}s`;
+  if (aliases[normalized]) return singular === "unidad" ? "unidades" : `${singular}s`;
   if (normalized.endsWith("s")) return trimmed;
   if (normalized.endsWith("z")) return `${trimmed.slice(0, -1)}ces`;
   return `${trimmed}s`;
