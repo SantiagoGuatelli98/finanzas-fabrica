@@ -661,3 +661,61 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .plain-guide-items p { display: grid; grid-template-columns: 95px 1fr; gap: 7px; }
   .plain-guide-items b { margin: 0; }
 }
+
+.catalog-disclosure { margin-top: 12px; border-top: 1px solid var(--line); }
+.catalog-disclosure > summary { min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 2px; color: var(--brand); font-size: 12px; font-weight: 700; cursor: pointer; list-style: none; }
+.catalog-disclosure > summary::-webkit-details-marker { display: none; }
+.catalog-disclosure > summary::after { content: "＋"; color: #9c5965; font-size: 18px; }
+.catalog-disclosure[open] > summary::after { content: "−"; }
+.catalog-disclosure .editable-list { padding-bottom: 4px; }
+.order-filters { display: grid; grid-template-columns: minmax(180px, 1.5fr) minmax(130px, .8fr) minmax(130px, .8fr) auto auto; gap: 8px; align-items: end; margin: 0 0 12px; }
+.order-filters label { display: grid; gap: 5px; color: #7a736c; font-size: 11px; }
+.order-filters input, .order-filters select { min-width: 0; width: 100%; min-height: 44px; padding: 9px 11px; border: 1px solid #ded9d3; border-radius: 9px; background: #fff; color: var(--ink); font-size: 13px; }
+.order-filters .secondary-button { min-height: 44px; padding: 0 15px; }
+.clear-order-filters { min-height: 44px; display: inline-flex; align-items: center; padding: 0 7px; color: var(--brand); font-size: 12px; font-weight: 650; }
+.filter-count { margin: -2px 0 11px; color: var(--muted); font-size: 12px; }
+.order-card-lines div { align-items: baseline; }
+.order-card-lines div > span:first-child { flex: 1; min-width: 0; }
+.order-card-lines strong { color: #57504a; }
+.order-card-lines i { padding-inline: 2px; color: #b5a9a0; font-style: normal; }
+.delete-order-button { min-height: 42px; padding: 0 12px; border: 1px solid #ead3d6; border-radius: 9px; background: #fff9f9; color: #a3293d; font-size: 12px; font-weight: 650; cursor: pointer; }
+.delete-order-button:hover { background: #fff0f2; }
+.quick-cash { min-width: 0; position: relative; }
+.quick-actions > .quick-cash > summary { min-height: 43px; display: flex; align-items: center; gap: 8px; padding: 0 11px; border: 1px solid #d9c1a0; border-radius: 9px; background: #fff8ec; color: #785727; font-size: 12px; font-weight: 700; cursor: pointer; list-style: none; }
+.quick-actions > .quick-cash > summary::-webkit-details-marker { display: none; }
+.quick-cash-form { position: absolute; z-index: 12; top: calc(100% + 8px); left: 0; width: min(380px, calc(100vw - 36px)); display: grid; gap: 10px; padding: 16px; border: 1px solid #e8ddd0; border-radius: 13px; background: #fffdfa; box-shadow: 0 16px 40px #39261422; }
+.quick-cash-form > strong { color: #40362d; font-size: 15px; }
+.quick-cash-form > p { margin: -6px 0 2px; color: #81786e; font-size: 12px; line-height: 1.45; }
+.quick-cash-form label { display: grid; gap: 5px; color: #776f65; font-size: 12px; }
+.quick-cash-form input { width: 100%; min-height: 46px; padding: 10px 11px; border: 1px solid #ded9d3; border-radius: 9px; background: #fff; color: var(--ink); font-size: 14px; }
+.quick-cash-form .primary-button { min-height: 48px; }
+@media (max-width: 700px) {
+  .quick-actions > .quick-cash { grid-column: 1 / -1; }
+  .quick-actions > .quick-cash > summary { min-height: 50px; padding-inline: 13px; font-size: 14px; }
+  .quick-cash-form { position: static; width: 100%; margin-top: 8px; padding: 15px; box-shadow: 0 5px 18px #39261412; }
+  .order-filters { grid-template-columns: 1fr 1fr; gap: 9px; }
+  .order-filters .order-search { grid-column: 1 / -1; }
+  .order-filters .secondary-button, .order-filters .clear-order-filters { min-height: 48px; }
+  .order-filters .secondary-button { grid-column: 1; }
+  .order-filters .clear-order-filters { grid-column: 2; justify-content: center; }
+  .order-filters input, .order-filters select { min-height: 48px; font-size: 15px; }
+  .editable-row input, .editable-row select { min-height: 48px; font-size: 14px; }
+  .editable-row .small-button { min-height: 48px; }
+  .delete-order-button { min-height: 48px; }
+  .order-card-actions { gap: 9px; }
+  .order-card-actions .secondary-button, .order-document-link, .payment-details summary { min-height: 48px; display: inline-flex; align-items: center; padding-inline: 13px; font-size: 13px; }
+  .payment-details summary { padding-inline: 0; }
+  .payment-form { gap: 10px; padding: 12px; }
+  .payment-form input { min-height: 48px; font-size: 15px; }
+  .payment-form .primary-button { min-height: 50px; }
+  .order-card-lines div { align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.45; }
+  .order-card-lines div > span:first-child { overflow-wrap: anywhere; }
+  .order-card-lines div > span:last-child { white-space: nowrap; }
+  .order-card-totals { padding-block: 14px; }
+  .order-card-totals span { font-size: 10px; }
+  .order-card-totals strong { font-size: 12px; }
+  .primary-button, .secondary-button, .small-button { min-height: 48px; }
+  .form-grid input, .form-grid select, .form-grid textarea, .order-line select, .order-line input { min-height: 48px; font-size: 15px; }
+  .add-line { min-height: 48px; padding: 0 10px; font-size: 14px; }
+  .catalog-disclosure > summary { min-height: 52px; font-size: 14px; }
+}

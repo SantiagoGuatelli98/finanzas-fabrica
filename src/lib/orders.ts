@@ -8,7 +8,7 @@ export async function getOrdersData() {
   if (!db) return { configured: false as const };
   try {
     const [ordersRows, itemRows, paymentRows, productRows, clientRows, settingRows] = await Promise.all([
-      db.select().from(orders).orderBy(desc(orders.createdOn), desc(orders.createdAt)).limit(100),
+      db.select().from(orders).orderBy(desc(orders.createdOn), desc(orders.createdAt)),
       db.select().from(orderItems),
       db.select().from(payments),
       db.select().from(products).where(eq(products.active, true)).then((rows) => rows.filter((product) => Number(product.price) > 0)),

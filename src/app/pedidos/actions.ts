@@ -148,3 +148,28 @@ export async function updateOrderStage(formData: FormData) {
   }
   revalidatePath("/"); revalidatePath("/pedidos"); redirect("/pedidos?estado=actualizado");
 }
+
+export async function deleteUnpaidOrder(formData: FormData) {
+  await requireAuth();
+  const parsed = z.object({ orderId: z.string().uuid() }).safeParse(Object.fromEntries(formData.entries()));
+  if (!db || !parsed.success) redirect("/pedidos?error=eliminar");
+
+  let hasPayments = false;
+  try {
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`order:${parsed.data.orderId}`}))`);
+      const [order] = await tx.select({ id: orders.id }).from(orders).where(eq(orders.id, parsed.data.orderId)).limit(1);
+      if (!order) return;
+      const [payment] = await tx.select({ id: payments.id }).from(payments).where(eq(payments.orderId, order.id)).limit(1);
+      if (payment) { hasPayments = true; return; }
+      await tx.delete(orders).where(eq(orders.id, order.id));
+    });
+  } catch {
+    redirect("/pedidos?error=eliminar");
+  }
+
+  if (hasPayments) redirect("/pedidos?error=con-cobros");
+  revalidatePath("/");
+  revalidatePath("/pedidos");
+  redirect("/pedidos?borrado=1");
+}

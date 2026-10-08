@@ -30,7 +30,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
           <label>Precio actual<input name="price" inputMode="decimal" placeholder="0,00" required /></label><label>Descripción<input name="description" placeholder="Opcional" maxLength={500} /></label>
           <button className="primary-button" type="submit" disabled={!ready}>Agregar producto <span>→</span></button>
         </form>
-        {!ready || data.products.length === 0 ? <p className="empty-state">Todavía no hay productos. Agregalos acá; el catálogo queda editable.</p> : <div className="editable-list">{data.products.map((product) => <form action={updateProduct} className={`editable-row ${product.active ? "" : "inactive-row"}`} key={product.id}>
+        {!ready || data.products.length === 0 ? <p className="empty-state">Todavía no hay productos. Agregalos acá; el catálogo queda editable.</p> : <details className="catalog-disclosure"><summary>Ver y editar {data.products.length} productos</summary><div className="editable-list">{data.products.map((product) => <form action={updateProduct} className={`editable-row ${product.active ? "" : "inactive-row"}`} key={product.id}>
           <input type="hidden" name="id" value={product.id} />
           <label><span>Producto</span><input name="name" defaultValue={product.name} maxLength={120} required /></label>
           <label><span>Unidad</span><input name="unit" defaultValue={product.unit} maxLength={40} required /></label>
@@ -38,7 +38,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
           <label><span>Estado</span><select name="active" defaultValue={String(product.active)}><option value="true">Activo</option><option value="false">Inactivo</option></select></label>
           <label className="editable-description"><span>Descripción</span><input name="description" defaultValue={product.description ?? ""} maxLength={500} /></label>
           <button type="submit" className="small-button" disabled={!ready}>Guardar</button>
-        </form>)}</div>}
+        </form>)}</div></details>}
       </div>
 
       <div className="panel"><div className="panel-heading"><div><span className="eyebrow">Sin CRM complejo</span><h2>Clientes</h2></div><span className="panel-count">{ready ? data.clients.length : 0}</span></div>
@@ -49,7 +49,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
           <label className="form-wide">Nota<textarea name="notes" rows={2} placeholder="Opcional" maxLength={500} /></label>
           <button className="primary-button" type="submit" disabled={!ready}>Agregar cliente <span>→</span></button>
         </form>
-        {!ready || data.clients.length === 0 ? <p className="empty-state">Todavía no hay clientes guardados.</p> : <div className="editable-list">{data.clients.map((client) => <form action={updateClient} className={`editable-row client-edit ${client.active ? "" : "inactive-row"}`} key={client.id}>
+        {!ready || data.clients.length === 0 ? <p className="empty-state">Todavía no hay clientes guardados.</p> : <details className="catalog-disclosure"><summary>Ver y editar {data.clients.length} clientes</summary><div className="editable-list">{data.clients.map((client) => <form action={updateClient} className={`editable-row client-edit ${client.active ? "" : "inactive-row"}`} key={client.id}>
           <input type="hidden" name="id" value={client.id} />
           <label><span>Nombre</span><input name="name" defaultValue={client.name} maxLength={120} required /></label>
           <label><span>WhatsApp</span><input name="phone" defaultValue={client.phone ?? ""} maxLength={80} /></label>
@@ -57,7 +57,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
           <label><span>Estado</span><select name="active" defaultValue={String(client.active)}><option value="true">Activo</option><option value="false">Inactivo</option></select></label>
           <label className="editable-description"><span>Nota</span><input name="notes" defaultValue={client.notes ?? ""} maxLength={500} /></label>
           <button type="submit" className="small-button" disabled={!ready}>Guardar</button>
-        </form>)}</div>}
+        </form>)}</div></details>}
       </div>
     </section>
 

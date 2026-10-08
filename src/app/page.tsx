@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+import { randomUUID } from "node:crypto";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { getDashboardData } from "@/lib/dashboard";
 import { logout } from "@/app/login/actions";
+import { createManualBusinessIncome } from "@/app/negocio/actions";
 import { CrestPhoto } from "@/components/crest-photo";
 
 function money(value: string | undefined, currency = "ARS") {
@@ -75,9 +77,13 @@ function Metric({ title, value, foot, kind = "" }: { title: string; value: strin
   return <article className={`metric-card ${kind}`}><div className="metric-top"><span>{title}</span><i className="metric-mark" /></div><div className="metric-number">{value}</div><div className="metric-foot">{foot}</div></article>;
 }
 
-async function DashboardContent() {
+function todayLocal() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
+
+async function DashboardContent({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
-  const data = await getDashboardData();
+  const [data, params] = await Promise.all([getDashboardData(), searchParams]);
   const today = new Intl.DateTimeFormat("es-AR", { dateStyle: "full", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
   const month = data.configured && !("error" in data)
     ? data.monthLabel.charAt(0).toUpperCase() + data.monthLabel.slice(1)
@@ -109,7 +115,24 @@ async function DashboardContent() {
             <a href="/pedidos#nuevo-pedido"><span>＋</span> Nuevo pedido</a>
             <a href="/pedidos#cuentas-por-cobrar"><span>↗</span> Registrar cobro</a>
             <a href="/negocio#nuevo-gasto"><span>−</span> Gasto del negocio</a>
+            <details className="quick-cash">
+              <summary><span>$</span> Cobro rápido</summary>
+              <form action={createManualBusinessIncome} className="quick-cash-form">
+                <input type="hidden" name="id" value={randomUUID()} />
+                <input type="hidden" name="returnTo" value="/" />
+                <input type="hidden" name="category" value="Venta rápida" />
+                <strong>Cobro directo a caja</strong>
+                <p>No hace falta registrar al cliente ni crear un pedido.</p>
+                <label>Monto<input name="amount" inputMode="decimal" placeholder="0,00" required /></label>
+                <label>Qué vendiste<input name="description" placeholder="Ej. 3 docenas de tubos" maxLength={240} required /></label>
+                <label>Fecha<input name="occurredOn" type="date" defaultValue={todayLocal()} required /></label>
+                <label>Cómo cobraste<input name="paymentMethod" placeholder="Efectivo, transferencia…" maxLength={80} /></label>
+                <input type="hidden" name="note" value="" />
+                <button className="primary-button" type="submit" disabled={!isConnected}>Guardar cobro <span>→</span></button>
+              </form>
+            </details>
           </nav>
+          {params.ingreso === "guardado" && <div className="notice success" role="status">Cobro rápido registrado y sumado a la caja del negocio.</div>}
 
           <section className="overview-grid" aria-label="Resumen del negocio">
             <article className="cash-card">
@@ -176,6 +199,6 @@ function DashboardFallback() {
   return <div className="app" id="inicio"><Sidebar /><main className="main"><header className="topbar"><span>Mi espacio / Resumen</span></header><div className="content"><div className="page-head"><div><div className="eyebrow">Tu resumen financiero</div><h1>Buen día, Santiago.</h1><div className="page-subtitle">Cargando tus datos guardados…</div></div></div></div></main><MobileNav /></div>;
 }
 
-export default function Home() {
-  return <Suspense fallback={<DashboardFallback />}><DashboardContent /></Suspense>;
+export default function Home({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  return <Suspense fallback={<DashboardFallback />}><DashboardContent searchParams={searchParams} /></Suspense>;
 }

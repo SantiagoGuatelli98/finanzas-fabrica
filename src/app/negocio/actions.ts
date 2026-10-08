@@ -103,7 +103,7 @@ export async function createBusinessExpense(formData: FormData) {
 
 export async function createManualBusinessIncome(formData: FormData) {
   await requireAuth();
-  const parsed = z.object({ id: z.string().uuid(), amount: amountText, occurredOn: dateText, category: z.string().trim().min(1).max(80), paymentMethod: text(80), description: z.string().trim().min(1).max(240), note: text(500) }).safeParse(Object.fromEntries(formData.entries()));
+  const parsed = z.object({ id: z.string().uuid(), amount: amountText, occurredOn: dateText, category: z.string().trim().min(1).max(80), paymentMethod: text(80), description: z.string().trim().min(1).max(240), note: text(500), returnTo: z.enum(["/", "/negocio"]).default("/negocio") }).safeParse(Object.fromEntries(formData.entries()));
   if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=ingreso");
   const values = parsed.data;
   try {
@@ -111,7 +111,7 @@ export async function createManualBusinessIncome(formData: FormData) {
     const paymentMethodId = values.paymentMethod ? await getPaymentMethod(values.paymentMethod) : null;
     await db.insert(businessCashMovements).values({ direction: "in", amount: values.amount, occurredOn: values.occurredOn, categoryId, paymentMethodId, description: values.description, source: "manual_income", sourceId: values.id });
   } catch { redirect("/negocio?error=ingreso"); }
-  revalidatePath("/"); revalidatePath("/negocio"); redirect("/negocio?ingreso=guardado");
+  revalidatePath("/"); revalidatePath("/negocio"); redirect(`${values.returnTo}?ingreso=guardado`);
 }
 
 export async function createSupplierDebt(formData: FormData) {
