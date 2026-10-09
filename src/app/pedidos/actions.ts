@@ -155,6 +155,29 @@ const transitions: Record<string, string[]> = {
   cancelled: [],
 };
 
+export async function scheduleOrderDelivery(formData: FormData) {
+  await requireAuth();
+  const parsed = z.object({
+    orderId: z.string().uuid(),
+    deliveryOn: z.union([dateText, z.literal("")]).transform((value) => value || null),
+  }).safeParse(Object.fromEntries(formData.entries()));
+  if (!db || !parsed.success) redirect("/pedidos?error=entrega");
+  try {
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`order:${parsed.data.orderId}`}))`);
+      const [order] = await tx.select({ stage: orders.stage }).from(orders).where(eq(orders.id, parsed.data.orderId)).limit(1);
+      if (!order || order.stage === "cancelled" || order.stage === "delivered") throw new Error("El pedido ya está cerrado.");
+      await tx.update(orders).set({ deliveryOn: parsed.data.deliveryOn }).where(eq(orders.id, parsed.data.orderId));
+    });
+  } catch {
+    redirect("/pedidos?error=entrega");
+  }
+  revalidatePath("/");
+  revalidatePath("/pedidos");
+  revalidatePath(`/pedidos/${parsed.data.orderId}/documento`);
+  redirect(`/pedidos?entrega=guardada#pedido-${parsed.data.orderId}`);
+}
+
 export async function updateOrderStage(formData: FormData) {
   await requireAuth();
   const parsed = z.object({ orderId: z.string().uuid(), stage: z.enum(["sent", "confirmed", "delivered", "cancelled"]) }).safeParse(Object.fromEntries(formData.entries()));

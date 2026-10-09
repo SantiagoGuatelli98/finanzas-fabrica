@@ -58,7 +58,7 @@ export async function getDashboardData() {
         .where(and(gte(businessExpenses.occurredOn, start), lt(businessExpenses.occurredOn, next))),
       db.select({ id: personalDebts.id, amount: personalDebts.originalAmount }).from(personalDebts).where(sql`${personalDebts.archivedAt} is null`),
       db.select({ id: personalDebtPayments.id, debtId: personalDebtPayments.debtId, amount: personalDebtPayments.amount, paidOn: personalDebtPayments.paidOn }).from(personalDebtPayments),
-      db.select({ id: orders.id, total: orders.total, stage: orders.stage }).from(orders).where(ne(orders.stage, "cancelled")),
+      db.select({ id: orders.id, total: orders.total, stage: orders.stage, orderNumber: orders.orderNumber, clientName: orders.clientName, deliveryOn: orders.deliveryOn }).from(orders).where(ne(orders.stage, "cancelled")),
       db.select({ total: sql<string>`coalesce(sum(${orders.total}), 0)` }).from(orders)
         .where(and(ne(orders.stage, "cancelled"), gte(orders.createdOn, start), lt(orders.createdOn, next))),
       db.select({ orderId: payments.orderId, amount: payments.amount }).from(payments),
@@ -111,6 +111,7 @@ export async function getDashboardData() {
       deliveredReceivable,
       supplierDebtTotal,
       pendingOrders: pendingOrders.length,
+      scheduledOrders: orderRows,
       orderCount: orderRows.length,
       monthLabel: new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date()),
     };

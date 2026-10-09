@@ -34,7 +34,7 @@ export function NewOrderForm({ products, clients, paymentMethods, requestKey, to
     <div className="form-grid">
       <label>Cliente<select name="clientId" defaultValue="" required><option value="" disabled>Elegí un cliente</option>{clients.filter((client) => client.name).map((client) => <option value={client.id} key={client.id}>{client.name}{client.phone ? ` · ${client.phone}` : ""}</option>)}</select></label>
       <label>Fecha del pedido<input name="createdOn" type="date" defaultValue={today} required /></label>
-      <label>Fecha de entrega<input name="deliveryOn" type="date" /></label>
+      <label>Fecha de entrega<input name="deliveryOn" type="date" /><small className="field-help">Aparece en «Próximos pedidos» de Inicio.</small></label>
       <label>Descuento opcional<input name="discount" inputMode="decimal" value={discount} onChange={(event) => setDiscount(event.target.value)} /><small className="field-help">Se resta del total del pedido.</small></label>
     </div>
 

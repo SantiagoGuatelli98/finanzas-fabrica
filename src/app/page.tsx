@@ -5,6 +5,7 @@ import { getDashboardData } from "@/lib/dashboard";
 import { logout } from "@/app/login/actions";
 import { createManualBusinessIncome } from "@/app/negocio/actions";
 import { CrestPhoto } from "@/components/crest-photo";
+import { UpcomingOrders } from "@/components/upcoming-orders";
 import { Icon, MobileNav, Sidebar } from "@/components/workspace-navigation";
 
 function money(value: string | undefined, currency = "ARS") {
@@ -104,6 +105,8 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Record
             </div>
             {isConnected && <p className="empty-inline">Los totales aparecerán acá a medida que registres movimientos.</p>}
           </section>
+
+          {isConnected && <UpcomingOrders orders={data.scheduledOrders} today={todayLocal()} currency={currency} />}
 
           <section id="negocio">
             <div className="section-title-row"><h2 className="section-title">La fábrica</h2><span className="section-subtitle">Separado de tus finanzas personales</span></div>

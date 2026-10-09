@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { randomUUID } from "node:crypto";
 import Decimal from "decimal.js";
-import { registerOrderPayment, updateOrderStage } from "./actions";
+import { registerOrderPayment, scheduleOrderDelivery, updateOrderStage } from "./actions";
 import { DeleteOrderForm } from "./delete-order-form";
 import { NewOrderForm } from "./new-order-form";
 import { getOrdersData } from "@/lib/orders";
@@ -44,6 +44,7 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
     <header className="module-head"><a className="back-link" href="/#inicio">← Volver al resumen</a><div className="eyebrow">Ventas y cobranzas</div><h1>Pedidos.</h1><p>Vendido no significa cobrado. Un pedido solo suma a caja cuando registrás un pago real.</p></header>
     {!ready && <div className="connection-alert"><span>◌</span><div><strong>{"error" in data ? "No se pudo leer Neon" : "Conectá Neon para empezar"}</strong> El catálogo y los pedidos se guardan en PostgreSQL.</div></div>}
     {message && <div className={`notice ${params.error ? "error" : "success"}`} role="status">{message}</div>}
+    {params.entrega === "guardada" && !params.error && <div className="notice success" role="status">Fecha de entrega guardada. Inicio muestra las entregas de esta semana y la próxima.</div>}
     <section className="panel new-order-panel" id="nuevo-pedido">
       <div className="panel-heading"><div><span className="eyebrow">Pedido nuevo</span><h2>Crear pedido</h2></div><span className="panel-index">01</span></div>
       <p className="section-help">Elegí cliente y productos. Al final podés dejar el pedido pendiente o cobrar el total en el mismo paso.</p>
@@ -66,13 +67,15 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
         const outstanding = Decimal.max(0, new Decimal(order.total).minus(received));
         const payStatus = order.stage === "cancelled" ? "Cancelado" : outstanding.isZero() ? "Cobrado" : received.isZero() ? "Pendiente" : "Parcial";
         const next = stageNext[order.stage];
-        return <article className="order-card" key={order.id}>
+        return <article className="order-card" key={order.id} id={`pedido-${order.id}`}>
           <div className="order-card-top"><div><span className="order-number">PED-{String(order.orderNumber).padStart(6, "0")}</span><span className="order-date">{dateLabel(order.createdOn)}</span></div><span className={`stage-badge stage-${order.stage}`}>{stageLabels[order.stage]}</span></div>
           <div className="order-client"><strong>{order.clientName}</strong><span>{payStatus}</span></div>
+          {order.deliveryOn && <p className="order-delivery-date">Entrega: <time dateTime={order.deliveryOn}>{dateLabel(order.deliveryOn)}</time></p>}
           <div className="order-card-lines">{lines.map((item) => <div key={item.id}><span><strong>{item.productName}</strong><small><b>Cantidad:</b> {new Decimal(item.quantity).toString()} <i>·</i> <b>Unidad de venta:</b> {formatUnitLabel(item.unit, item.quantity)}</small></span><span>{money(item.subtotal, currency)}</span></div>)}</div>
           <div className="order-card-totals"><div><span>Total vendido</span><strong>{money(order.total, currency)}</strong></div><div><span>Cobrado</span><strong>{money(received, currency)}</strong></div><div><span>Saldo pendiente</span><strong className={outstanding.gt(0) ? "pending-amount" : "amount-in"}>{money(outstanding, currency)}</strong></div></div>
           <div className="order-card-actions">
             <a className="order-document-link" href={`/pedidos/${order.id}/documento`}>Documento y compartir</a>
+            {order.stage !== "cancelled" && order.stage !== "delivered" && <details className="order-schedule-details"><summary>{order.deliveryOn ? "Cambiar entrega" : "Agendar entrega"}</summary><form action={scheduleOrderDelivery} className="order-schedule-form"><input type="hidden" name="orderId" value={order.id} /><label>Fecha de entrega<input name="deliveryOn" type="date" defaultValue={order.deliveryOn ?? ""} /><small className="field-help">Dejala vacía para quitar la fecha.</small></label><button className="secondary-button" type="submit">Guardar fecha</button></form></details>}
             {next && <form action={updateOrderStage}><input type="hidden" name="orderId" value={order.id} /><input type="hidden" name="stage" value={next} /><button className="secondary-button" type="submit">Marcar {stageLabels[next].toLowerCase()}</button></form>}
             {order.stage !== "cancelled" && outstanding.gt(0) && <details className="payment-details"><summary>Registrar cobro</summary><form action={registerOrderPayment} className="payment-form"><input type="hidden" name="paymentId" value={randomUUID()} /><input type="hidden" name="orderId" value={order.id} /><label>Importe recibido<input name="amount" inputMode="decimal" defaultValue={outstanding.toFixed(2)} required /></label><label>Fecha<input name="receivedOn" type="date" defaultValue={today} required /></label><label>Medio de pago<select name="paymentMethod" defaultValue={availablePaymentMethods[0]} required>{availablePaymentMethods.map((method) => <option value={method} key={method}>{method}</option>)}</select></label><label>Nota<input name="note" placeholder="Opcional" maxLength={500} /></label><button className="primary-button" type="submit">Guardar cobro <span>→</span></button></form></details>}
             {received.isZero() && <DeleteOrderForm orderId={order.id} />}

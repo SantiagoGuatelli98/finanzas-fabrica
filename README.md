@@ -31,6 +31,10 @@ Las funciones que escriben datos necesitan conectividad a PostgreSQL para operar
 
 En Vercel, el build de producción aplica las migraciones pendientes usando `DATABASE_URL_UNPOOLED` si está disponible. El build se detiene si la base no está configurada o si una migración falla; así no se publica una versión que espere tablas inexistentes.
 
+## Próximos pedidos en Inicio
+
+El widget muestra hasta cuatro entregas desde hoy hasta el domingo de la próxima semana, ordenadas por fecha (semanas de lunes a domingo, fecha local de Buenos Aires). Usa la fecha de entrega del pedido; excluye pedidos entregados, cancelados y sin fecha. «Agendar pedido» abre el formulario habitual. En los pedidos guardados, «Agendar entrega» / «Cambiar entrega» permite editar o quitar la fecha sin generar ventas ni cobros nuevos. La fecha también se actualiza en el documento del pedido.
+
 ## Agenda de servicios
 
 En Personal, «Agendar servicio» guarda nombre, monto y fecha. Puede ser un vencimiento único o repetirse cada mes. «Ver calendario» abre una ventana nativa con los servicios de cada día. Los meses futuros se muestran como pendientes desde la referencia del servicio, sin crear movimientos de gasto al consultar el calendario.
