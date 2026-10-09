@@ -12,7 +12,7 @@ import { monthDueDate, serviceRunsInMonth } from "@/lib/service-calendar";
 
 export type ServiceActionState = { error?: string; saved?: string; dueOn?: string };
 
-const amountText = z.string().trim().regex(/^\d{1,12}([,.]\d{1,2})?$/).transform((value) => value.replace(",", ".")).refine((value) => new Decimal(value).isPositive());
+const amountText = z.string().trim().regex(/^\d{1,12}([,.]\d{1,2})?$/).transform((value) => value.replace(",", ".")).refine((value) => new Decimal(value).gt(0));
 const periodText = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/);
 const dateText = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
   const date = new Date(`${value}T12:00:00Z`);

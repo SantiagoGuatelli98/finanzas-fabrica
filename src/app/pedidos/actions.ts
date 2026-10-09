@@ -56,7 +56,7 @@ export async function createOrder(formData: FormData) {
     const product = byId.get(item.productId)!;
     const quantity = new Decimal(item.quantity);
     const unitPrice = new Decimal(item.unitPrice);
-    if (!quantity.isPositive() || !unitPrice.isPositive()) redirect("/pedidos?error=monto");
+    if (!quantity.gt(0) || !unitPrice.gt(0)) redirect("/pedidos?error=monto");
     return { productId: product.id, productName: product.name, unit: product.unit, quantity: quantity.toFixed(3), unitPrice: unitPrice.toFixed(2), subtotal: quantity.times(unitPrice).toDecimalPlaces(2, Decimal.ROUND_HALF_UP) };
   });
   const subtotal = lines.reduce((sum, line) => sum.plus(line.subtotal), new Decimal(0)).toDecimalPlaces(2, Decimal.ROUND_HALF_UP);
@@ -67,7 +67,7 @@ export async function createOrder(formData: FormData) {
   let receivedOn: string | null = null;
   if (collectNow) {
     const paidOn = dateText.safeParse(parsed.data.receivedOn);
-    if (!total.isPositive() || !parsed.data.paymentMethod || !paidOn.success) redirect("/pedidos?error=pago");
+    if (!total.gt(0) || !parsed.data.paymentMethod || !paidOn.success) redirect("/pedidos?error=pago");
     receivedOn = paidOn.data;
   }
 
@@ -118,7 +118,7 @@ export async function registerOrderPayment(formData: FormData) {
   if (!db || !parsed.success) redirect("/pedidos?error=pago");
   const values = parsed.data;
   const paidAmount = new Decimal(values.amount);
-  if (!paidAmount.isPositive()) redirect("/pedidos?error=pago");
+  if (!paidAmount.gt(0)) redirect("/pedidos?error=pago");
   try {
     const paymentMethodId = await getPaymentMethod(values.paymentMethod);
     await db.transaction(async (tx) => {

@@ -87,7 +87,7 @@ export async function createSupplier(formData: FormData) {
 export async function createBusinessExpense(formData: FormData) {
   await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), amount: amountText, occurredOn: dateText, category: z.string().trim().min(1).max(80), supplierId: z.union([z.string().uuid(), z.literal("")]).optional().transform((value) => value || null), paymentMethod: z.string().trim().min(1).max(80), description: z.string().trim().min(1).max(240), notes: text(500) }).safeParse(Object.fromEntries(formData.entries()));
-  if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=gasto");
+  if (!db || !parsed.success || !new Decimal(parsed.data.amount).gt(0)) redirect("/negocio?error=gasto");
   const values = parsed.data;
   try {
     const categoryId = await getCategory(values.category);
@@ -104,7 +104,7 @@ export async function createBusinessExpense(formData: FormData) {
 export async function createManualBusinessIncome(formData: FormData) {
   await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), amount: amountText, occurredOn: dateText, category: z.string().trim().min(1).max(80), paymentMethod: text(80), description: z.string().trim().min(1).max(240), note: text(500), returnTo: z.enum(["/", "/negocio"]).default("/negocio") }).safeParse(Object.fromEntries(formData.entries()));
-  if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=ingreso");
+  if (!db || !parsed.success || !new Decimal(parsed.data.amount).gt(0)) redirect("/negocio?error=ingreso");
   const values = parsed.data;
   try {
     const categoryId = await getCategory(values.category);
@@ -117,7 +117,7 @@ export async function createManualBusinessIncome(formData: FormData) {
 export async function createSupplierDebt(formData: FormData) {
   await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), supplierId: z.string().uuid(), concept: z.string().trim().min(1).max(240), amount: amountText, openedOn: dateText, category: z.string().trim().min(1).max(80), notes: text(500) }).safeParse(Object.fromEntries(formData.entries()));
-  if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=deuda-proveedor");
+  if (!db || !parsed.success || !new Decimal(parsed.data.amount).gt(0)) redirect("/negocio?error=deuda-proveedor");
   const values = parsed.data;
   try {
     const [supplier] = await db.select({ id: suppliers.id }).from(suppliers).where(and(eq(suppliers.id, values.supplierId), eq(suppliers.active, true))).limit(1);
@@ -134,7 +134,7 @@ export async function createSupplierDebt(formData: FormData) {
 export async function registerSupplierPayment(formData: FormData) {
   await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), debtId: z.string().uuid(), amount: amountText, paidOn: dateText, paymentMethod: z.string().trim().min(1).max(80), note: text(500) }).safeParse(Object.fromEntries(formData.entries()));
-  if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=pago-proveedor");
+  if (!db || !parsed.success || !new Decimal(parsed.data.amount).gt(0)) redirect("/negocio?error=pago-proveedor");
   const values = parsed.data;
   try {
     const paymentMethodId = await getPaymentMethod(values.paymentMethod);
@@ -156,7 +156,7 @@ export async function registerSupplierPayment(formData: FormData) {
 export async function withdrawBusinessFunds(formData: FormData) {
   await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), amount: amountText, occurredOn: dateText, personalCategory: z.string().trim().min(1).max(80), paymentMethod: text(80), note: text(500) }).safeParse(Object.fromEntries(formData.entries()));
-  if (!db || !parsed.success || !new Decimal(parsed.data.amount).isPositive()) redirect("/negocio?error=retiro");
+  if (!db || !parsed.success || !new Decimal(parsed.data.amount).gt(0)) redirect("/negocio?error=retiro");
   const values = parsed.data;
   try {
     const personalCategoryId = await getPersonalCategory(values.personalCategory);

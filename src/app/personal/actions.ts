@@ -106,7 +106,7 @@ export async function registerDebtPayment(formData: FormData) {
   if (!parsed.success || !db) redirect("/personal?error=validacion");
   const values = parsed.data;
   const paymentAmount = new Decimal(values.amount);
-  if (!paymentAmount.isPositive()) redirect("/personal?error=monto");
+  if (!paymentAmount.gt(0)) redirect("/personal?error=monto");
   try {
     const expenseCategoryId = await findOrCreateCategory(values.category);
     await db.transaction(async (tx) => {
@@ -148,7 +148,7 @@ export async function adjustEmergencyFund(formData: FormData) {
   if (!parsed.success || !db) redirect("/personal?error=fondo");
   const values = parsed.data;
   const value = new Decimal(values.amount);
-  if (!value.isPositive()) redirect("/personal?error=fondo");
+  if (!value.gt(0)) redirect("/personal?error=fondo");
   try {
     await db.transaction(async (tx) => {
       await tx.execute(sql`select pg_advisory_xact_lock(hashtext('emergency-fund'))`);

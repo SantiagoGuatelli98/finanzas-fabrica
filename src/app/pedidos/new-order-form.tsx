@@ -56,7 +56,7 @@ export function NewOrderForm({ products, clients, paymentMethods, requestKey, to
     })}</div>
     <button type="button" className="add-line" disabled={lines.length >= 30 || products.length === 0} onClick={() => setLines((current) => [...current, { key: nextKey, productId: "", quantity: "1", unitPrice: "0" }])}>＋ Agregar otro producto</button>
     <label className="order-notes">Observaciones<textarea name="notes" rows={2} placeholder="Aclaraciones para este pedido" maxLength={500} /></label>
-    <div className="order-total-box"><div><span>Subtotal</span><strong>{money(subtotal)}</strong></div><div><span>Descuento</span><strong>− {money(discountAmount)}</strong></div><div className="grand-total"><span>Total del pedido</span><strong>{money(total)}</strong></div></div>
+    <div className="order-total-box"><div><span>Subtotal</span><strong>{money(subtotal)}</strong></div>{discountAmount.gt(0) && <div><span>Descuento</span><strong>− {money(discountAmount)}</strong></div>}<div className="grand-total"><span>Total del pedido</span><strong>{money(total)}</strong></div></div>
     <div className="order-save-box">
       <div className="order-save-heading"><strong>¿Lo cobrás ahora?</strong><span>Si lo cobrás, se registra el total en caja junto con el pedido.</span></div>
       <div className="order-save-fields">
@@ -65,7 +65,7 @@ export function NewOrderForm({ products, clients, paymentMethods, requestKey, to
       </div>
       <div className="order-save-actions">
         <button className="secondary-button" type="submit" name="saveMode" value="pending" disabled={!clients.length || !products.length || !validLines.length}>Guardar pendiente</button>
-        <button className="primary-button" type="submit" name="saveMode" value="paid" disabled={!clients.length || !products.length || !validLines.length || !total.isPositive()}>Guardar y cobrar {money(total)} <span>→</span></button>
+        <button className="primary-button" type="submit" name="saveMode" value="paid" disabled={!clients.length || !products.length || !validLines.length || !total.gt(0)}>Guardar y cobrar {money(total)} <span>→</span></button>
       </div>
     </div>
     {(!clients.length || !products.length) && <p className="form-hint">{!clients.length && !products.length ? "Agregá al menos un cliente y un producto en Negocio para crear pedidos." : !clients.length ? "Agregá un cliente en Negocio para crear pedidos." : "Agregá un producto en Negocio para crear pedidos."}</p>}

@@ -36,7 +36,7 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
   const balanceDebt = Decimal.max(0, originalDebt.minus(paidDebt));
   const emergencyBalance = configured ? data.emergencyFundEntries.reduce((sum, entry) => sum.plus(entry.direction === "add" ? entry.amount : new Decimal(entry.amount).negated()), new Decimal(0)) : new Decimal(0);
   const emergencyTarget = configured ? new Decimal(data.emergencyFundTarget) : new Decimal(0);
-  const emergencyProgress = emergencyTarget.isPositive() ? Decimal.min(100, emergencyBalance.div(emergencyTarget).times(100)).toNumber() : 0;
+  const emergencyProgress = emergencyTarget.gt(0) ? Decimal.min(100, emergencyBalance.div(emergencyTarget).times(100)).toNumber() : 0;
   const targetDate = configured ? data.debtTargetDate : null;
   const daysUntilTarget = targetDate ? Math.ceil((new Date(`${targetDate}T12:00:00-03:00`).getTime() - new Date(`${today}T12:00:00-03:00`).getTime()) / 86_400_000) : null;
   const monthlyDebtGoal = daysUntilTarget === null || daysUntilTarget < 0 ? null : balanceDebt.times(30.4375).div(Decimal.max(1, daysUntilTarget)).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
@@ -111,9 +111,9 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
       <section className="panel emergency-panel" id="fondo-emergencia">
         <div className="panel-heading"><div><span className="eyebrow">Ahorro disponible</span><h2>Fondo de emergencia</h2></div><span className="panel-index">03</span></div>
         <p className="section-help">Llevá el control de lo que separaste para imprevistos. Este registro no crea automáticamente un ingreso o gasto personal.</p>
-        <div className="emergency-stats"><div><span>Saldo actual</span><strong>{money(configured ? emergencyBalance : null, currency)}</strong></div><div><span>Objetivo</span><strong>{money(configured ? emergencyTarget : null, currency)}</strong></div><div><span>Progreso</span><strong>{configured && emergencyTarget.isPositive() ? `${emergencyProgress.toFixed(0)}%` : "—"}</strong></div></div>
+        <div className="emergency-stats"><div><span>Saldo actual</span><strong>{money(configured ? emergencyBalance : null, currency)}</strong></div><div><span>Objetivo</span><strong>{money(configured ? emergencyTarget : null, currency)}</strong></div><div><span>Progreso</span><strong>{configured && emergencyTarget.gt(0) ? `${emergencyProgress.toFixed(0)}%` : "—"}</strong></div></div>
         <div className="debt-progress emergency-progress"><span style={{ width: `${emergencyProgress}%` }} /></div>
-        {!emergencyTarget.isPositive() && <p className="form-hint">Configurá un objetivo en Configuración para ver el progreso.</p>}
+        {!emergencyTarget.gt(0) && <p className="form-hint">Configurá un objetivo en Configuración para ver el progreso.</p>}
         <form action={adjustEmergencyFund} className="fund-form"><label>Movimiento<select name="direction" defaultValue="add"><option value="add">Agregar al fondo</option><option value="remove">Retirar del fondo</option></select></label><label>Monto<input name="amount" inputMode="decimal" placeholder="0,00" required /></label><label>Fecha<input name="occurredOn" type="date" defaultValue={today} required /></label><label>Nota<input name="note" placeholder="Opcional" maxLength={500} /></label><button className="secondary-button" type="submit" disabled={!configured}>Guardar movimiento</button></form>
       </section>
 
