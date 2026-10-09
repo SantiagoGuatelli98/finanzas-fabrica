@@ -4,12 +4,11 @@ import { requireAuth } from "@/lib/auth";
 
 import { and, eq, isNull, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
-import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { categories, emergencyFundEntries, paymentMethods, personalDebtPayments, personalDebts, personalTransactions, recurringExpenseOccurrences, recurringExpenses } from "@/lib/db/schema";
+import { categories, emergencyFundEntries, paymentMethods, personalDebtPayments, personalDebts, personalTransactions } from "@/lib/db/schema";
 
 const amountText = z.string().trim().regex(/^\d{1,12}([,.]\d{1,2})?$/, "Ingresá un monto válido con hasta dos decimales.").transform((value) => value.replace(",", "."));
 const dateText = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Seleccioná una fecha válida.").refine((value) => {
@@ -17,10 +16,6 @@ const dateText = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Seleccioná una fecha 
   return !Number.isNaN(date.valueOf()) && date.toISOString().slice(0, 10) === value;
 }, "Seleccioná una fecha válida.");
 const optionalText = z.string().trim().max(500).optional().transform((value) => value || null);
-function currentPeriod() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit" }).format(new Date());
-}
-
 async function findOrCreateCategory(name: string) {
   if (!db) throw new Error("Falta configurar DATABASE_URL.");
   const cleanName = name.trim().slice(0, 80);
@@ -164,70 +159,4 @@ export async function adjustEmergencyFund(formData: FormData) {
     });
   } catch { redirect("/personal?error=fondo"); }
   revalidatePath("/"); revalidatePath("/personal"); redirect("/personal?fondo=actualizado");
-}
-
-export async function createRecurringExpense(formData: FormData) {
-  await requireAuth();
-  const parsed = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(120), amount: amountText, category: z.string().trim().min(1).max(80), paymentMethod: z.string().trim().max(80).optional().transform((value) => value || ""), dueDay: z.coerce.number().int().min(1).max(31) }).safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success || !db || !new Decimal(parsed.data.amount).isPositive()) redirect("/personal?error=recurrente");
-  const values = parsed.data;
-  try {
-    const categoryId = await findOrCreateCategory(values.category);
-    const paymentMethodId = values.paymentMethod ? await findOrCreatePaymentMethod(values.paymentMethod) : null;
-    await db.transaction(async (tx) => {
-      await tx.insert(recurringExpenses).values({ id: values.id, name: values.name, amount: values.amount, categoryId, paymentMethodId, dueDay: values.dueDay });
-      await tx.insert(recurringExpenseOccurrences).values({ recurringExpenseId: values.id, period: currentPeriod(), amount: values.amount, status: "pending" }).onConflictDoNothing();
-    });
-  } catch { redirect("/personal?error=recurrente"); }
-  revalidatePath("/personal"); redirect("/personal?recurrente=guardado");
-}
-
-export async function updateRecurringExpense(formData: FormData) {
-  await requireAuth();
-  const parsed = z.object({ id: z.string().uuid(), name: z.string().trim().min(1).max(120), amount: amountText, category: z.string().trim().min(1).max(80), paymentMethod: z.string().trim().max(80).optional().transform((value) => value || ""), dueDay: z.coerce.number().int().min(1).max(31), active: z.enum(["true", "false"]) }).safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success || !db || !new Decimal(parsed.data.amount).isPositive()) redirect("/personal?error=recurrente");
-  const values = parsed.data;
-  try {
-    const categoryId = await findOrCreateCategory(values.category);
-    const paymentMethodId = values.paymentMethod ? await findOrCreatePaymentMethod(values.paymentMethod) : null;
-    await db.update(recurringExpenses).set({ name: values.name, amount: values.amount, categoryId, paymentMethodId, dueDay: values.dueDay, active: values.active === "true" }).where(eq(recurringExpenses.id, values.id));
-  } catch { redirect("/personal?error=recurrente"); }
-  revalidatePath("/personal"); redirect("/personal?recurrente=actualizado");
-}
-
-export async function addRecurringOccurrence(formData: FormData) {
-  await requireAuth();
-  const parsed = z.object({ recurringExpenseId: z.string().uuid() }).safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success || !db) redirect("/personal?error=recurrente");
-  try {
-    const [template] = await db.select().from(recurringExpenses).where(and(eq(recurringExpenses.id, parsed.data.recurringExpenseId), eq(recurringExpenses.active, true))).limit(1);
-    if (!template) redirect("/personal?error=recurrente");
-    await db.insert(recurringExpenseOccurrences).values({ recurringExpenseId: template.id, period: currentPeriod(), amount: template.amount, status: "pending" }).onConflictDoNothing();
-  } catch { redirect("/personal?error=recurrente"); }
-  revalidatePath("/personal"); redirect("/personal?pendiente=creado");
-}
-
-export async function markRecurringExpensePaid(formData: FormData) {
-  await requireAuth();
-  const parsed = z.object({ occurrenceId: z.string().uuid(), amount: amountText, paidOn: dateText, note: optionalText }).safeParse(Object.fromEntries(formData.entries()));
-  if (!parsed.success || !db || !new Decimal(parsed.data.amount).isPositive()) redirect("/personal?error=recurrente");
-  const values = parsed.data;
-  try {
-    await db.transaction(async (tx) => {
-      const [occurrence] = await tx.select().from(recurringExpenseOccurrences).where(eq(recurringExpenseOccurrences.id, values.occurrenceId)).limit(1);
-      if (!occurrence || occurrence.status !== "pending") throw new Error("Este período ya está resuelto.");
-      const [template] = await tx.select().from(recurringExpenses).where(eq(recurringExpenses.id, occurrence.recurringExpenseId)).limit(1);
-      if (!template) throw new Error("No se encontró el gasto recurrente.");
-      const personalTransactionId = randomUUID();
-      const [updated] = await tx.update(recurringExpenseOccurrences).set({ status: "paid", amount: values.amount, paidOn: values.paidOn, personalTransactionId })
-        .where(and(eq(recurringExpenseOccurrences.id, values.occurrenceId), eq(recurringExpenseOccurrences.status, "pending"))).returning({ id: recurringExpenseOccurrences.id });
-      if (!updated) throw new Error("Este período ya se pagó.");
-      await tx.insert(personalTransactions).values({
-        id: personalTransactionId, type: "expense", amount: values.amount, occurredOn: values.paidOn,
-        categoryId: template.categoryId, paymentMethodId: template.paymentMethodId,
-        source: "Gasto recurrente", description: template.name, notes: values.note,
-      });
-    });
-  } catch { redirect("/personal?error=recurrente"); }
-  revalidatePath("/"); revalidatePath("/personal"); redirect("/personal?recurrente=pagado");
 }

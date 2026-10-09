@@ -30,3 +30,13 @@ Los importes se guardan en `NUMERIC` y los cálculos monetarios usan Decimal. Co
 Las funciones que escriben datos necesitan conectividad a PostgreSQL para operar; las pantallas muestran estado vacío/error de configuración hasta entonces.
 
 En Vercel, el build de producción aplica las migraciones pendientes usando `DATABASE_URL_UNPOOLED` si está disponible. El build se detiene si la base no está configurada o si una migración falla; así no se publica una versión que espere tablas inexistentes.
+
+## Agenda de servicios
+
+En Personal, «Agendar servicio» guarda nombre, monto y fecha. Puede ser un vencimiento único o repetirse cada mes. «Ver calendario» abre una ventana nativa con los servicios de cada día. Los meses futuros se muestran como pendientes desde la referencia del servicio, sin crear movimientos de gasto al consultar el calendario.
+
+Los días 29, 30 y 31 se ajustan al último día de los meses más cortos. Editar un vencimiento conserva su fecha e importe propios y actualiza la referencia para próximos meses. Los períodos ya pagados conservan sus importes y fechas; se puede editar el próximo vencimiento. Pausar un servicio detiene sus próximos pendientes y mantiene el historial pagado.
+
+«Pagar» registra el gasto personal y resuelve el vencimiento en una misma transacción. Las operaciones del servicio comparten un bloqueo por identificador para evitar pagos duplicados. La migración `0005_service_calendar` agrega las fechas y copia los vencimientos anteriores sin cambiar sus importes.
+
+Comprobaciones del calendario: `npx tsx --test scripts/service-calendar.test.ts`.

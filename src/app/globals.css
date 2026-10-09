@@ -807,3 +807,138 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .order-save-fields input, .order-save-fields select { min-height: 49px; font-size: 16px; }
   .order-save-actions .primary-button, .order-save-actions .secondary-button { min-height: 52px; }
 }
+
+/* A quiet agenda: real club artwork, clear dates, and native dialogs. */
+.brand-crest { width: 52px; height: 52px; border-radius: 12px; background-size: 135% auto; box-shadow: 0 3px 10px #3020190a; }
+.mobile-logo { width: 35px; height: 35px; border-radius: 9px; background-size: 135% auto; }
+.login-brand-crest { width: 58px; height: 58px; border-radius: 12px; background-size: 135% auto; box-shadow: 0 4px 18px #56102030; }
+.personal-summary article { border-top: 3px solid #d8cfc5; }
+.personal-summary article:nth-child(2) { border-top-color: var(--brand); }
+.personal-summary span { font-size: 12px; }
+.personal-summary strong { font-size: 26px; font-variant-numeric: tabular-nums; }
+.services-panel { margin-bottom: 24px; overflow: hidden; }
+.services-panel-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px; }
+.services-panel-heading h2 { margin: 5px 0 8px; font-family: var(--font-display); font-size: 30px; font-weight: 500; letter-spacing: -.035em; }
+.services-panel-heading p { margin: 0; color: #83766f; font-size: 14px; }
+.services-head-actions { display: flex; align-items: center; gap: 9px; }
+.services-head-actions button { min-height: 45px; margin: 0; font-size: 13px; }
+.service-calendar-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 13px; border: 1px solid #dfd5cc; border-radius: 9px; background: #fff; color: #574d48; cursor: pointer; font-weight: 650; }
+.service-calendar-button svg { width: 19px; height: 19px; color: var(--brand); }
+.services-month-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 20px 0 15px; }
+.service-month-switch { display: flex; align-items: center; gap: 12px; }
+.service-month-switch strong { min-width: 165px; text-align: center; font-size: 15px; font-weight: 650; text-transform: capitalize; }
+.service-month-switch button { width: 36px; height: 36px; border: 1px solid #e6ddd4; border-radius: 50%; background: #fff; color: #78665f; font-size: 24px; cursor: pointer; }
+.service-month-switch button:hover { border-color: var(--brand); color: var(--brand); }
+.service-today-button { min-height: 36px; padding: 5px 10px; border: 0; border-radius: 8px; background: #f7f0e9; color: #70625a; font-size: 12px; font-weight: 650; cursor: pointer; }
+.services-month-summary { display: grid; grid-template-columns: 1.25fr 1fr; margin-bottom: 18px; border: 1px solid #e9e0d8; border-radius: 12px; background: #faf7f3; }
+.services-month-summary > div { display: grid; align-content: start; gap: 6px; padding: 18px 21px; }
+.services-month-summary > div + div { border-left: 1px solid #e9e0d8; }
+.services-month-summary span { color: #84776e; font-size: 12px; }
+.services-month-summary strong { font-family: var(--font-display); font-size: 29px; font-weight: 500; letter-spacing: -.035em; font-variant-numeric: tabular-nums; }
+.services-month-summary small { color: #9a8b80; font-size: 11px; }
+.service-agenda { display: grid; }
+.service-agenda-row { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto auto; align-items: center; gap: 16px; padding: 15px 0; border-bottom: 1px solid #eee6df; }
+.service-agenda-row:last-child { border-bottom: 0; }
+.service-date-stamp { display: grid; justify-items: center; gap: 0; padding: 7px 4px; border: 1px solid #ead7d9; border-radius: 9px; background: #fff5f6; color: var(--brand); }
+.service-date-stamp strong { font-size: 21px; font-weight: 650; line-height: 1.2; }
+.service-date-stamp span { font-size: 10px; text-transform: uppercase; }
+.service-agenda-name { display: grid; gap: 4px; min-width: 0; }
+.service-agenda-name > strong { font-size: 15px; overflow-wrap: anywhere; }
+.service-agenda-name > span { color: #8b7e75; font-size: 11px; }
+.service-agenda-name i { margin: 0 5px; font-style: normal; color: #c9bab1; }
+.service-agenda-amount { font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.service-row-actions { display: flex; gap: 7px; }
+.service-edit-button { min-height: 40px; padding: 8px 11px; border: 1px solid #e4d9d0; border-radius: 8px; background: #fff; color: #75655c; font-size: 12px; font-weight: 600; cursor: pointer; }
+.service-paid-label { display: inline-flex; align-items: center; min-width: 74px; color: var(--positive); font-size: 12px; justify-content: flex-end; }
+.service-agenda-row.is-paid .service-date-stamp { border-color: #dde8df; background: #f1f7f2; color: var(--positive); }
+.services-empty { display: grid; justify-items: center; padding: 25px 10px 18px; text-align: center; }
+.services-empty-icon { width: 48px; height: 48px; display: grid; place-items: center; margin-bottom: 12px; border-radius: 14px; background: #f9edef; color: var(--brand); }
+.services-empty-icon svg { width: 25px; height: 25px; }
+.services-empty > strong { font-family: var(--font-display); font-size: 23px; font-weight: 500; }
+.services-empty p { max-width: 350px; margin: 8px 0 15px; color: #928176; font-size: 13px; line-height: 1.5; }
+.services-empty > button { min-height: 44px; border: 0; background: transparent; color: var(--brand); font-size: 13px; font-weight: 700; cursor: pointer; }
+.service-notice { margin: 0 0 10px; color: var(--positive); font-size: 12px; }
+.paused-services { margin-top: 16px; border-top: 1px solid var(--line); color: #8c7e73; font-size: 12px; }
+.paused-services summary { padding: 12px 0; cursor: pointer; }
+.paused-services > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 5px 0; }
+.service-dialog { width: min(760px, calc(100% - 32px)); max-height: calc(100dvh - 48px); margin: auto; padding: 0; border: 1px solid #e4d8ce; border-radius: 19px; background: var(--surface); color: var(--ink); box-shadow: 0 30px 100px #30211d40; overflow-y: auto; overscroll-behavior: contain; }
+.service-dialog::backdrop { background: #30242285; }
+body:has(.service-dialog[open]) { overflow: hidden; }
+.service-dialog-inner { padding: 25px 28px; }
+.service-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 16px; }
+.service-dialog-header h2 { margin: 6px 0 0; font-family: var(--font-display); font-size: 29px; font-weight: 500; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.dialog-close { flex: none; width: 38px; height: 38px; display: grid; place-items: center; padding: 0; border: 1px solid #e8dfd7; border-radius: 50%; background: #faf7f3; color: #8b7770; font-size: 26px; cursor: pointer; }
+.service-calendar-weekdays, .service-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.service-calendar-weekdays { padding-bottom: 8px; color: #a08c7e; text-align: center; font-size: 11px; }
+.calendar-day { min-height: 67px; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; padding: 9px 10px; border: 1px solid #ede5dd; border-radius: 9px; background: #fff; color: #6c5e56; cursor: pointer; }
+.calendar-day > span:first-child { font-size: 14px; font-weight: 650; }
+.calendar-day:hover { border-color: #c78f98; background: #fff9f9; }
+.calendar-day.is-today > span:first-child { color: var(--brand); text-decoration: underline; text-underline-offset: 4px; }
+.calendar-day.is-selected { border-color: var(--brand); background: #fff0f3; box-shadow: inset 0 0 0 1px var(--brand); }
+.calendar-bill-mark { color: var(--brand); font-size: 10px; font-weight: 650; }
+.calendar-bill-mark.paid { color: var(--positive); }
+.calendar-legend { display: flex; flex-wrap: wrap; gap: 15px; padding: 13px 0 19px; color: #9a8a7e; font-size: 11px; }
+.calendar-legend span { display: flex; align-items: center; gap: 5px; }
+.calendar-legend i { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
+.calendar-legend i.paid { background: var(--positive); }
+.calendar-legend small { margin-left: auto; font-size: 11px; }
+.calendar-day-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid #e9dfd5; }
+.calendar-day-heading h3 { margin: 0; font-size: 14px; font-weight: 650; text-transform: capitalize; }
+.calendar-day-heading button { min-height: 40px; padding: 8px 10px; border: 0; border-radius: 8px; background: #f8edef; color: var(--brand); font-size: 12px; font-weight: 700; cursor: pointer; }
+.calendar-day-empty { padding: 10px 0 15px; color: #9a8a7e; font-size: 13px; }
+.editor-dialog { max-width: 510px; }
+.service-editor-form { display: grid; gap: 17px; }
+.service-editor-form label:not(.service-check) { display: grid; gap: 7px; min-width: 0; color: #7d6a61; font-size: 12px; font-weight: 650; }
+.service-editor-form input:not([type=hidden]):not([type=checkbox]), .service-editor-form select { width: 100%; min-width: 0; min-height: 48px; padding: 11px 12px; border: 1px solid #ded2c7; border-radius: 9px; background: #fff; color: var(--ink); font-size: 15px; font-weight: 400; }
+.service-form-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.service-check { display: flex; align-items: flex-start; gap: 10px; color: #6b5a53; cursor: pointer; }
+.service-check input { width: 18px; height: 18px; flex: none; margin-top: 1px; accent-color: var(--brand); }
+.service-check > span { display: grid; gap: 4px; }
+.service-check strong { font-size: 13px; font-weight: 650; }
+.service-check small { color: #a08c7e; font-size: 11px; line-height: 1.45; }
+.service-extra-fields { padding-top: 13px; border-top: 1px solid #eee2d8; }
+.service-extra-fields summary { min-height: 30px; margin-bottom: 8px; color: #9b8173; font-size: 12px; cursor: pointer; }
+.service-editor-form .primary-button { min-height: 49px; font-size: 14px; }
+.service-form-error { margin: 0; padding: 11px 12px; border-radius: 9px; background: #fff0f2; color: #a32940; font-size: 12px; line-height: 1.5; }
+.service-form-note { margin: 0; color: #9a8173; font-size: 12px; line-height: 1.5; }
+.service-payment-summary { display: grid; gap: 7px; padding: 15px 17px; border: 1px solid #ecded2; border-radius: 11px; background: #faf6f0; }
+.service-payment-summary span { color: #9a8575; font-size: 12px; }
+.service-payment-summary strong { font-family: var(--font-display); font-size: 29px; font-weight: 500; }
+@media (max-width: 1050px) {
+  .service-agenda-row { gap: 11px; grid-template-columns: 46px minmax(0, 1fr) auto; }
+  .service-row-actions, .service-paid-label { grid-column: 2 / -1; justify-self: end; }
+}
+@media (max-width: 700px) {
+  .services-panel-heading { gap: 15px; }
+  .services-panel-heading h2 { font-size: 27px; }
+  .services-head-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+  .services-head-actions button { min-height: 49px; padding-inline: 10px; font-size: 12px; }
+  .service-month-switch { gap: 6px; }
+  .service-month-switch strong { min-width: 140px; font-size: 14px; }
+  .service-month-switch button, .service-today-button { min-height: 44px; }
+  .service-month-switch button { width: 40px; }
+  .services-month-summary > div { padding: 15px 13px; }
+  .services-month-summary strong { font-size: 24px; }
+  .services-month-summary span { font-size: 11px; }
+  .services-month-summary small { font-size: 10px; }
+  .service-agenda-row { grid-template-columns: 41px minmax(0, 1fr) auto; gap: 10px; }
+  .service-agenda-name > strong { font-size: 14px; }
+  .service-agenda-name > span { font-size: 10px; }
+  .service-agenda-amount { font-size: 13px; }
+  .service-row-actions button { min-height: 44px; }
+  .service-dialog { width: calc(100% - 20px); max-height: calc(100dvh - 24px); border-radius: 15px; }
+  .service-dialog-inner { padding: 20px 16px; }
+  .service-dialog-header h2 { font-size: 25px; }
+  .dialog-close { width: 42px; height: 42px; }
+  .service-calendar-weekdays, .service-calendar-grid { gap: 4px; }
+  .calendar-day { min-height: 54px; gap: 5px; padding: 6px; border-radius: 7px; }
+  .calendar-day > span:first-child { font-size: 13px; }
+  .calendar-bill-mark { font-size: 10px; }
+  .calendar-bill-word { display: none; }
+  .calendar-legend { gap: 13px; }
+  .calendar-legend small { width: 100%; margin: 0; }
+  .calendar-day-heading h3 { font-size: 13px; }
+  .calendar-day-heading button { min-height: 44px; white-space: nowrap; }
+  .service-form-columns { grid-template-columns: 1fr; }
+  .service-editor-form input:not([type=hidden]):not([type=checkbox]), .service-editor-form select { min-height: 49px; font-size: 16px; }
+}

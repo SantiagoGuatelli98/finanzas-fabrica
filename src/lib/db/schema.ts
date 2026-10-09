@@ -73,6 +73,8 @@ export const recurringExpenses = pgTable("recurring_expenses", {
   categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
   paymentMethodId: uuid("payment_method_id").references(() => paymentMethods.id, { onDelete: "set null" }),
   dueDay: integer("due_day").notNull(),
+  startsOn: date("starts_on"),
+  repeatMonthly: boolean("repeat_monthly").notNull().default(true),
   active: boolean("active").notNull().default(true),
   createdAt: createdAt(),
 });
@@ -83,6 +85,7 @@ export const recurringExpenseOccurrences = pgTable("recurring_expense_occurrence
   period: text("period").notNull(),
   amount: amount("amount"),
   status: recurrenceStatus("status").notNull().default("pending"),
+  dueOn: date("due_on"),
   paidOn: date("paid_on"),
   personalTransactionId: uuid("personal_transaction_id").references(() => personalTransactions.id),
 }, (table) => [uniqueIndex("recurring_occurrence_period_idx").on(table.recurringExpenseId, table.period)]);

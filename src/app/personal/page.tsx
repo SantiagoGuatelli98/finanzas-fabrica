@@ -1,8 +1,9 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { randomUUID } from "node:crypto";
+import Link from "next/link";
 import Decimal from "decimal.js";
-import { addRecurringOccurrence, adjustEmergencyFund, createPersonalDebt, createPersonalTransaction, createRecurringExpense, markRecurringExpensePaid, registerDebtPayment, updateRecurringExpense } from "./actions";
+import { adjustEmergencyFund, createPersonalDebt, createPersonalTransaction, registerDebtPayment } from "./actions";
+import { ServicesCalendar } from "./services-calendar";
 import { getPersonalData } from "@/lib/personal";
 import { WorkspaceFrame } from "@/components/workspace-navigation";
 
@@ -13,10 +14,6 @@ function money(value: Decimal.Value | null, currency = "ARS") {
 
 function todayLocal() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-}
-
-function currentMonth() {
-  return todayLocal().slice(0, 7);
 }
 
 function dateLabel(value: string) {
@@ -49,7 +46,7 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
   const movementType = params.tipo === "ingreso" ? "income" : "expense";
   return (
     <div className="personal-page">
-      <header className="module-head"><a className="back-link" href="/#inicio">← Volver al resumen</a><div className="eyebrow">Finanzas personales</div><h1>Tu plata, clara.</h1><p>Registrá lo que entra y sale. Cada movimiento queda guardado con su fecha e historial.</p></header>
+      <header className="module-head"><Link className="back-link" href="/#inicio">← Volver al resumen</Link><div className="eyebrow">Finanzas personales</div><h1>Tu plata, clara.</h1><p>Registrá lo que entra y sale. Cada movimiento queda guardado con su fecha e historial.</p></header>
       {!configured && <div className="connection-alert"><span>◌</span><div><strong>{"error" in data ? "No se pudo leer Neon" : "Conectá Neon para empezar"}</strong>{"error" in data ? "Revisá la conexión y aplicá las migraciones." : <>Completá <code>DATABASE_URL</code> en <code>.env.local</code> y ejecutá la migración.</>}</div></div>}
       {statusMessage && <div className={`notice ${params.error ? "error" : "success"}`} role="status">{statusMessage}</div>}
 
@@ -59,6 +56,8 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
         <article><span>Deuda pendiente</span><strong>{money(configured ? balanceDebt : null, currency)}</strong></article>
         <article><span>Pagado de deuda</span><strong>{money(configured ? paidDebt : null, currency)}</strong></article>
       </section>
+
+      <ServicesCalendar services={configured ? data.recurringExpenses : []} occurrences={configured ? data.recurringOccurrences : []} categories={configured ? data.categories : []} paymentMethods={configured ? data.paymentMethods : []} today={today} currency={currency} enabled={configured} />
 
       <div className="personal-columns">
         <section className="panel" id="nuevo-movimiento" aria-labelledby="movement-title">
@@ -116,29 +115,6 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
         <div className="debt-progress emergency-progress"><span style={{ width: `${emergencyProgress}%` }} /></div>
         {!emergencyTarget.isPositive() && <p className="form-hint">Configurá un objetivo en Configuración para ver el progreso.</p>}
         <form action={adjustEmergencyFund} className="fund-form"><label>Movimiento<select name="direction" defaultValue="add"><option value="add">Agregar al fondo</option><option value="remove">Retirar del fondo</option></select></label><label>Monto<input name="amount" inputMode="decimal" placeholder="0,00" required /></label><label>Fecha<input name="occurredOn" type="date" defaultValue={today} required /></label><label>Nota<input name="note" placeholder="Opcional" maxLength={500} /></label><button className="secondary-button" type="submit" disabled={!configured}>Guardar movimiento</button></form>
-      </section>
-
-      <section className="panel recurring-panel" id="recurrentes">
-        <div className="panel-heading"><div><span className="eyebrow">Servicios, cuotas y tarjetas</span><h2>Gastos recurrentes</h2></div><span className="panel-index">04</span></div>
-        <p className="transfer-explainer">Cada mes empieza como pendiente. La fecha de vencimiento nunca lo marca como pagado automáticamente.</p>
-        <form action={createRecurringExpense} className="recurring-create-form">
-          <input type="hidden" name="id" value={randomUUID()} />
-          <label>Nombre<input name="name" placeholder="Ej. Internet, Visa" maxLength={120} required /></label>
-          <label>Monto del período<input name="amount" inputMode="decimal" placeholder="0,00" required /></label>
-          <label>Categoría<input name="category" list="personal-categories" placeholder="Categoría editable" maxLength={80} required /></label>
-          <label>Medio de pago<input name="paymentMethod" list="payment-methods" placeholder="Opcional" maxLength={80} /></label>
-          <label>Día de vencimiento<input name="dueDay" type="number" min="1" max="31" placeholder="Día" required /></label>
-          <button className="secondary-button" type="submit" disabled={!configured}>Agregar gasto</button>
-        </form>
-        {!configured || data.recurringExpenses.length === 0 ? <p className="empty-state">Todavía no configuraste gastos recurrentes.</p> : <div className="recurring-list">{data.recurringExpenses.map((template) => {
-          const occurrence = data.recurringOccurrences.find((item) => item.recurringExpenseId === template.id && item.period === currentMonth());
-          return <article className="recurring-row" key={template.id}>
-            <div className="recurring-name"><strong>{template.name}</strong><span>{template.dueDay} de cada mes · {data.categories.find((item) => item.id === template.categoryId)?.name ?? "Sin categoría"}</span></div>
-            <details className="recurring-edit"><summary>Ajustar gasto recurrente</summary><form action={updateRecurringExpense} className="recurring-update-form"><input type="hidden" name="id" value={template.id} /><label>Nombre<input name="name" defaultValue={template.name} maxLength={120} required /></label><label>Monto<input name="amount" inputMode="decimal" defaultValue={template.amount} required /></label><label>Categoría<input name="category" list="personal-categories" defaultValue={data.categories.find((item) => item.id === template.categoryId)?.name ?? ""} required /></label><label>Medio de pago<input name="paymentMethod" defaultValue={data.paymentMethods.find((item) => item.id === template.paymentMethodId)?.name ?? ""} /></label><label>Día<input name="dueDay" type="number" min="1" max="31" defaultValue={template.dueDay} required /></label><label>Estado<select name="active" defaultValue={String(template.active)}><option value="true">Activo</option><option value="false">Inactivo</option></select></label><button className="small-button" type="submit">Guardar ajustes</button></form></details>
-            <strong className="recurring-amount">{money(occurrence?.amount ?? template.amount, currency)}</strong>
-            {!template.active ? <span className="paid-badge">Inactivo</span> : !occurrence ? <form action={addRecurringOccurrence}><input type="hidden" name="recurringExpenseId" value={template.id} /><button className="small-button" type="submit">Crear pendiente del mes</button></form> : occurrence.status === "pending" ? <form action={markRecurringExpensePaid} className="recurring-pay-form"><input type="hidden" name="occurrenceId" value={occurrence.id} /><label><span className="sr-only">Monto pagado de {template.name}</span><input name="amount" inputMode="decimal" defaultValue={occurrence.amount} required /></label><label><span className="sr-only">Fecha de pago</span><input name="paidOn" type="date" defaultValue={today} required /></label><button className="small-button" type="submit">Marcar pagado</button></form> : <span className={`recurrence-status ${occurrence.status}`}>{occurrence.status === "paid" ? `Pagado · ${occurrence.paidOn ?? ""}` : "Omitido"}</span>}
-          </article>;
-        })}</div>}
       </section>
 
       <section className="panel transactions-panel">

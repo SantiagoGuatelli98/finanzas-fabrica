@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { logout } from "@/app/login/actions";
 import { CrestPhoto } from "@/components/crest-photo";
 
@@ -11,14 +12,6 @@ const sections: { label: string; href: string; icon: WorkspaceSection }[] = [
   { label: "Pedidos", href: "/pedidos", icon: "orders" },
   { label: "Configuración", href: "/configuracion", icon: "settings" },
 ];
-
-export function GlobeMark({ className = "" }: { className?: string }) {
-  return <svg className={className} viewBox="0 0 80 80" fill="none" aria-hidden="true">
-    <path d="M40 7c-17 0-28 12-28 28 0 17 12 27 28 33 16-6 28-16 28-33C68 19 57 7 40 7Z" stroke="currentColor" strokeWidth="2.5" />
-    <path d="M26 25v22m28-22v22M26 36h28" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" />
-    <path d="M32 64l3 8h10l3-8M35 72h10" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round" />
-  </svg>;
-}
 
 export function Icon({ name }: { name: WorkspaceSection | "calendar" | "trend" | "wallet" }) {
   const paths: Record<string, ReactNode> = {
@@ -36,15 +29,15 @@ export function Icon({ name }: { name: WorkspaceSection | "calendar" | "trend" |
 
 export function Sidebar({ active }: { active: WorkspaceSection }) {
   return <aside className="sidebar">
-    <a className="brand" href="/">
-      <span className="brand-mark"><GlobeMark /></span>
+    <Link className="brand" href="/">
+      <CrestPhoto className="brand-crest" />
       <span><span className="brand-name">Mi Caja</span><span className="brand-caption">Santiago · Huracán</span></span>
-    </a>
+    </Link>
     <div className="nav-label">Espacio de trabajo</div>
     <nav className="nav-list" aria-label="Navegación principal">
-      {sections.map((section) => <a className={`nav-link ${active === section.icon ? "active" : ""}`} href={section.href} key={section.href} aria-current={active === section.icon ? "page" : undefined}>
+      {sections.map((section) => <Link className={`nav-link ${active === section.icon ? "active" : ""}`} href={section.href} key={section.href} aria-current={active === section.icon ? "page" : undefined}>
         <span className="nav-icon"><Icon name={section.icon} /></span>{section.label}
-      </a>)}
+      </Link>)}
     </nav>
     <div className="sidebar-bottom">
       <div className="club-note"><CrestPhoto className="sidebar-crest" /><span>El Globo en tu día a día.<br />Parque Patricios, siempre.</span></div>
@@ -55,9 +48,9 @@ export function Sidebar({ active }: { active: WorkspaceSection }) {
 
 export function MobileNav({ active }: { active: WorkspaceSection }) {
   return <nav className="mobile-nav" aria-label="Navegación móvil">
-    {sections.map((section) => <a className={active === section.icon ? "active" : ""} href={section.href} key={section.href} aria-current={active === section.icon ? "page" : undefined}>
+    {sections.map((section) => <Link className={active === section.icon ? "active" : ""} href={section.href} key={section.href} aria-current={active === section.icon ? "page" : undefined}>
       <Icon name={section.icon} /><span>{section.icon === "settings" ? "Más" : section.label}</span>
-    </a>)}
+    </Link>)}
   </nav>;
 }
 

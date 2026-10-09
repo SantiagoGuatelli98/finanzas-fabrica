@@ -24,7 +24,7 @@ export async function getPersonalData() {
       db.select({ currency: appSettings.currency, emergencyFundTarget: appSettings.emergencyFundTarget, debtTargetDate: appSettings.debtTargetDate }).from(appSettings).limit(1),
       db.select().from(emergencyFundEntries),
       db.select().from(recurringExpenses).orderBy(desc(recurringExpenses.active), recurringExpenses.name),
-      db.select().from(recurringExpenseOccurrences).orderBy(desc(recurringExpenseOccurrences.period)).limit(100),
+      db.select().from(recurringExpenseOccurrences).orderBy(desc(recurringExpenseOccurrences.period)),
     ]);
     return { configured: true as const, transactions, debts, debtPayments, categories: categoryRows, paymentMethods: paymentMethodRows, monthlyIncome: monthlyIncome[0]?.amount ?? "0", monthlyExpenses: monthlyExpenses[0]?.amount ?? "0", currency: settingsRows[0]?.currency ?? "ARS", emergencyFundTarget: settingsRows[0]?.emergencyFundTarget ?? "0", debtTargetDate: settingsRows[0]?.debtTargetDate ?? null, emergencyFundEntries: fundRows, recurringExpenses: recurringRows, recurringOccurrences: occurrenceRows };
   } catch {

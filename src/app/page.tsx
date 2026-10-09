@@ -5,7 +5,7 @@ import { getDashboardData } from "@/lib/dashboard";
 import { logout } from "@/app/login/actions";
 import { createManualBusinessIncome } from "@/app/negocio/actions";
 import { CrestPhoto } from "@/components/crest-photo";
-import { GlobeMark, Icon, MobileNav, Sidebar } from "@/components/workspace-navigation";
+import { Icon, MobileNav, Sidebar } from "@/components/workspace-navigation";
 
 function money(value: string | undefined, currency = "ARS") {
   if (value === undefined) return "—";
@@ -40,7 +40,7 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Record
       <main className="main">
         <header className="topbar">
           <div className="breadcrumb"><strong>Mi espacio</strong><span> / </span>Resumen</div>
-          <a className="mobile-brand" href="#inicio"><span className="brand-mark"><GlobeMark /></span>Mi Caja</a>
+          <a className="mobile-brand" href="#inicio"><CrestPhoto className="mobile-logo" />Mi Caja</a>
           <div className="top-meta"><span className="top-today">{today}</span><span className="month-pill">{month}</span><form action={logout} className="top-logout"><button type="submit" aria-label="Cerrar sesión">Salir</button></form><span className="avatar" aria-label="Espacio personal">S</span></div>
         </header>
         <div className="content">
@@ -82,7 +82,6 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Record
               <div className="cash-label">Dinero disponible · negocio</div>
               <div className="cash-number">{money(isConnected ? data.businessCash : undefined, currency)}</div>
               <div className="cash-caption">Saldo calculado con los movimientos registrados</div>
-              <GlobeMark className="cash-globe" />
               <div className="cash-footer"><span>En caja del negocio</span><strong>{isConnected ? "Según movimientos guardados" : "Esperando conexión"}</strong></div>
             </article>
             <article className="sold-card">

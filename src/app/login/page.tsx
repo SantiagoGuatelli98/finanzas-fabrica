@@ -12,7 +12,7 @@ async function LoginContent({ searchParams }: { searchParams: Promise<Record<str
   return <main className="login-page">
     <div className="login-shell">
       <section className="login-identity" aria-label="Mi Caja">
-        <div className="login-identity-top"><span className="balloon-emblem"><span>H</span></span><span>MI CAJA <b>·</b> SANTIAGO</span></div>
+        <div className="login-identity-top"><CrestPhoto className="login-brand-crest" /><span>MI CAJA <b>·</b> SANTIAGO</span></div>
         <div className="login-identity-copy"><div className="login-kicker">PERSONAL + FÁBRICA</div><h1>Tu día,<br /> <em>en orden.</em></h1><p>Ingresos, gastos y pedidos en un solo lugar. Simple de abrir, rápido de usar.</p></div>
         <div className="login-identity-foot"><span>♦ PARQUE PATRICIOS</span><span>ROJO Y BLANCO, TODOS LOS DÍAS</span></div>
       </section>
