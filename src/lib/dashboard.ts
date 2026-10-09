@@ -82,6 +82,7 @@ export async function getDashboardData() {
     for (const payment of paymentRows) {
       paidByOrder.set(payment.orderId, (paidByOrder.get(payment.orderId) ?? new Decimal(0)).plus(payment.amount));
     }
+    const scheduledOrders = orderRows.filter((order) => Decimal.max(0, new Decimal(order.total).minus(paidByOrder.get(order.id) ?? 0)).gt(0));
     const receivable = orderRows.reduce((sum, order) => {
       return sum.plus(Decimal.max(0, new Decimal(order.total).minus(paidByOrder.get(order.id) ?? 0)));
     }, new Decimal(0)).toFixed(2);
@@ -111,7 +112,7 @@ export async function getDashboardData() {
       deliveredReceivable,
       supplierDebtTotal,
       pendingOrders: pendingOrders.length,
-      scheduledOrders: orderRows,
+      scheduledOrders,
       orderCount: orderRows.length,
       monthLabel: new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date()),
     };

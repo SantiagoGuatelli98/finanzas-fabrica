@@ -33,7 +33,7 @@ En Vercel, el build de producción aplica las migraciones pendientes usando `DAT
 
 ## Próximos pedidos en Inicio
 
-El widget muestra hasta cuatro entregas desde hoy hasta el domingo de la próxima semana, ordenadas por fecha (semanas de lunes a domingo, fecha local de Buenos Aires). Usa la fecha de entrega del pedido; excluye pedidos entregados, cancelados y sin fecha. «Agendar pedido» abre el formulario habitual. En los pedidos guardados, «Agendar entrega» / «Cambiar entrega» permite editar o quitar la fecha sin generar ventas ni cobros nuevos. La fecha también se actualiza en el documento del pedido.
+El widget muestra hasta cuatro entregas desde hoy hasta el domingo de la próxima semana, ordenadas por fecha (semanas de lunes a domingo, fecha local de Buenos Aires). Usa la fecha de entrega del pedido; excluye pedidos entregados, cancelados, completamente cobrados y sin fecha. «Agendar pedido» abre el formulario habitual. En los pedidos guardados, «Agendar entrega» / «Cambiar entrega» permite editar o quitar la fecha sin generar ventas ni cobros nuevos. La fecha también se actualiza en el documento del pedido.
 
 ## Agenda de servicios
 
