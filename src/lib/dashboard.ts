@@ -1,10 +1,11 @@
 import { requireAuth } from "@/lib/auth";
-import { and, eq, gte, lt, ne, notInArray, sql } from "drizzle-orm";
+import { and, asc, eq, gte, lt, ne, notInArray, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { db, databaseReady } from "@/lib/db";
 import {
   businessCashMovements,
   businessExpenses,
+  categories,
   appSettings,
   emergencyFundEntries,
   orders,
@@ -43,7 +44,7 @@ export async function getDashboardData() {
   const { start, next } = monthBounds();
 
   try {
-    const [personalIncome, personalExpenses, cashIn, cashInMonth, cashOut, businessExpenseMonth, debtRows, debtPaymentRows, orderRows, monthlyOrders, paymentRows, pendingOrders, settingsRows, fundRows, supplierDebtRows, supplierPaymentRows] = await Promise.all([
+    const [personalIncome, personalExpenses, cashIn, cashInMonth, cashOut, businessExpenseMonth, debtRows, debtPaymentRows, orderRows, monthlyOrders, paymentRows, pendingOrders, settingsRows, fundRows, supplierDebtRows, supplierPaymentRows, personalCategories] = await Promise.all([
       db.select({ amount: sql<string>`coalesce(sum(${personalTransactions.amount}), 0)` }).from(personalTransactions)
         .where(and(eq(personalTransactions.type, "income"), gte(personalTransactions.occurredOn, start), lt(personalTransactions.occurredOn, next))),
       db.select({ amount: sql<string>`coalesce(sum(${personalTransactions.amount}), 0)` }).from(personalTransactions)
@@ -67,6 +68,8 @@ export async function getDashboardData() {
       db.select({ amount: emergencyFundEntries.amount, direction: emergencyFundEntries.direction }).from(emergencyFundEntries),
       db.select({ id: supplierDebts.id, amount: supplierDebts.originalAmount }).from(supplierDebts).where(sql`${supplierDebts.archivedAt} is null`),
       db.select({ debtId: supplierPayments.debtId, amount: supplierPayments.amount }).from(supplierPayments),
+      db.select({ id: categories.id, name: categories.name }).from(categories)
+        .where(and(eq(categories.scope, "personal"), eq(categories.active, true))).orderBy(asc(categories.name)),
     ]);
 
     const activeDebtIds = new Set(debtRows.map((row) => row.id));
@@ -113,6 +116,7 @@ export async function getDashboardData() {
       supplierDebtTotal,
       pendingOrders: pendingOrders.length,
       scheduledOrders,
+      personalCategories,
       orderCount: orderRows.length,
       monthLabel: new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date()),
     };

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { getDashboardData } from "@/lib/dashboard";
 import { logout } from "@/app/login/actions";
-import { createManualBusinessIncome } from "@/app/negocio/actions";
+import { createManualBusinessIncome, createQuickPersonalExpense } from "@/app/negocio/actions";
 import { CrestPhoto } from "@/components/crest-photo";
 import { UpcomingOrders } from "@/components/upcoming-orders";
 import { Icon, MobileNav, Sidebar } from "@/components/workspace-navigation";
@@ -53,7 +53,20 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Record
           {!isConnected && <div className="connection-alert" role="status"><span>◌</span><div><strong>{"error" in data ? "No pudimos leer la base de datos" : "Falta conectar Neon"}</strong>{"error" in data ? "Revisá DATABASE_URL y que la migración esté aplicada. No mostramos datos de ejemplo." : <>Copiá <code>.env.example</code> a <code>.env.local</code>, agregá tu cadena de conexión y aplicá las migraciones. La app no usa datos de muestra.</>}</div></div>}
 
           <nav className="quick-actions" aria-label="Acciones rápidas">
-            <a href="/personal?tipo=gasto#nuevo-movimiento"><span>−</span> Gasto personal</a>
+            <details className="quick-expense">
+              <summary><span>−</span> Gasto personal</summary>
+              <form action={createQuickPersonalExpense} className="quick-expense-form">
+                <input type="hidden" name="id" value={randomUUID()} />
+                <input type="hidden" name="occurredOn" value={todayLocal()} />
+                <strong>Anotá una compra personal</strong>
+                <label>Monto<input name="amount" inputMode="decimal" placeholder="0,00" autoComplete="off" required /></label>
+                <label>¿Con qué plata pagaste?<select name="paidFrom" defaultValue="personal"><option value="personal">Mi cuenta personal</option><option value="business">Caja del negocio</option></select></label>
+                <label>¿En qué?<input name="category" list="quick-personal-categories" placeholder="Ej. Comida" maxLength={80} required /><datalist id="quick-personal-categories">{isConnected && data.personalCategories.map((category) => <option key={category.id} value={category.name} />)}</datalist></label>
+                <label>Detalle (opcional)<input name="description" placeholder="Ej. Compra en el almacén" maxLength={240} /></label>
+                <label>Medio de pago<select name="paymentMethod" defaultValue="Efectivo"><option>Efectivo</option><option>Transferencia</option><option>Mercado Pago</option><option>Tarjeta de débito</option><option>Tarjeta de crédito</option></select></label>
+                <button className="primary-button" type="submit" disabled={!isConnected}>Guardar gasto <span>→</span></button>
+              </form>
+            </details>
             <a href="/personal?tipo=ingreso#nuevo-movimiento"><span>＋</span> Ingreso personal</a>
             <a href="/personal#deudas"><span>↘</span> Pago de deuda</a>
             <a href="/pedidos#nuevo-pedido"><span>＋</span> Nuevo pedido</a>
@@ -77,6 +90,8 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Record
             </details>
           </nav>
           {params.ingreso === "guardado" && <div className="notice success" role="status">Cobro rápido registrado y sumado a la caja del negocio.</div>}
+          {params["gasto-personal"] === "guardado" && <div className="notice success" role="status">{params.desde === "business" ? "Gasto anotado. Se actualizó la caja del negocio y tus gastos personales." : "Gasto personal anotado."}</div>}
+          {params.error === "gasto-personal" && <div className="notice error" role="alert">No se pudo guardar el gasto. Revisá los datos e intentá de nuevo.</div>}
 
           <section className="overview-grid" aria-label="Resumen del negocio">
             <article className="cash-card">

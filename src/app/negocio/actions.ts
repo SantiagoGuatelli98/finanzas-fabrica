@@ -114,6 +114,53 @@ export async function createManualBusinessIncome(formData: FormData) {
   revalidatePath("/"); revalidatePath("/negocio"); redirect(`${values.returnTo}?ingreso=guardado`);
 }
 
+export async function createQuickPersonalExpense(formData: FormData) {
+  await requireAuth();
+  const parsed = z.object({
+    id: z.string().uuid(),
+    amount: amountText,
+    occurredOn: dateText,
+    category: z.string().trim().min(1).max(80),
+    description: text(240),
+    paymentMethod: z.string().trim().min(1).max(80),
+    paidFrom: z.enum(["personal", "business"]),
+  }).safeParse(Object.fromEntries(formData.entries()));
+  if (!db || !parsed.success || !new Decimal(parsed.data.amount).gt(0)) redirect("/?error=gasto-personal");
+  const values = parsed.data;
+  try {
+    const categoryId = await getPersonalCategory(values.category);
+    const paymentMethodId = await getPaymentMethod(values.paymentMethod);
+    await db.transaction(async (tx) => {
+      if (values.paidFrom === "business") {
+        await tx.execute(sql`select pg_advisory_xact_lock(hashtext('business-cash'))`);
+      }
+      const [expense] = await tx.insert(personalTransactions).values({
+        id: values.id,
+        type: "expense",
+        amount: values.amount,
+        occurredOn: values.occurredOn,
+        categoryId,
+        paymentMethodId,
+        source: values.paidFrom === "business" ? "Caja del negocio" : "Cuenta personal",
+        description: values.description ?? values.category,
+      }).returning({ id: personalTransactions.id });
+      if (values.paidFrom === "business") {
+        await tx.insert(businessCashMovements).values({
+          id: randomUUID(), direction: "out", amount: values.amount, occurredOn: values.occurredOn,
+          categoryId, paymentMethodId, description: `Gasto personal: ${values.description ?? values.category}`,
+          source: "personal_expense", sourceId: expense.id,
+        });
+      }
+    });
+  } catch {
+    redirect("/?error=gasto-personal");
+  }
+  revalidatePath("/");
+  revalidatePath("/personal");
+  if (values.paidFrom === "business") revalidatePath("/negocio");
+  redirect(`/?gasto-personal=guardado&desde=${values.paidFrom}`);
+}
+
 export async function createSupplierDebt(formData: FormData) {
   await requireAuth();
   const parsed = z.object({ id: z.string().uuid(), supplierId: z.string().uuid(), concept: z.string().trim().min(1).max(240), amount: amountText, openedOn: dateText, category: z.string().trim().min(1).max(80), notes: text(500) }).safeParse(Object.fromEntries(formData.entries()));
