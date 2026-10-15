@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { categories, emergencyFundEntries, paymentMethods, personalDebtPayments, personalDebts, personalTransactions } from "@/lib/db/schema";
+import { businessCashMovements, categories, emergencyFundEntries, paymentMethods, personalDebtPayments, personalDebts, personalTransactions } from "@/lib/db/schema";
 
 const amountText = z.string().trim().regex(/^\d{1,12}([,.]\d{1,2})?$/, "Ingresá un monto válido con hasta dos decimales.").transform((value) => value.replace(",", "."));
 const dateText = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Seleccioná una fecha válida.").refine((value) => {
@@ -101,6 +101,8 @@ export async function registerDebtPayment(formData: FormData) {
     amount: amountText,
     paidOn: dateText,
     category: z.string().trim().min(1).max(80),
+    paymentMethod: z.string().trim().min(1).max(80),
+    paidFrom: z.enum(["personal", "business"]),
     note: optionalText,
   }).safeParse(Object.fromEntries(formData.entries()));
   if (!parsed.success || !db) redirect("/personal?error=validacion");
@@ -109,7 +111,11 @@ export async function registerDebtPayment(formData: FormData) {
   if (!paymentAmount.gt(0)) redirect("/personal?error=monto");
   try {
     const expenseCategoryId = await findOrCreateCategory(values.category);
+    const paymentMethodId = await findOrCreatePaymentMethod(values.paymentMethod);
     await db.transaction(async (tx) => {
+      if (values.paidFrom === "business") {
+        await tx.execute(sql`select pg_advisory_xact_lock(hashtext('business-cash'))`);
+      }
       await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`personal-debt:${values.debtId}`}))`);
       const [debt] = await tx.select({ originalAmount: personalDebts.originalAmount }).from(personalDebts)
         .where(and(eq(personalDebts.id, values.debtId), isNull(personalDebts.archivedAt))).limit(1);
@@ -123,7 +129,8 @@ export async function registerDebtPayment(formData: FormData) {
         amount: values.amount,
         occurredOn: values.paidOn,
         categoryId: expenseCategoryId,
-        source: "Pago de deuda",
+        paymentMethodId,
+        source: values.paidFrom === "business" ? "Caja del negocio" : "Cuenta personal",
         description: values.note,
       }).returning({ id: personalTransactions.id });
       await tx.insert(personalDebtPayments).values({
@@ -133,13 +140,81 @@ export async function registerDebtPayment(formData: FormData) {
         note: values.note,
         personalTransactionId: transaction.id,
       });
+      if (values.paidFrom === "business") {
+        await tx.insert(businessCashMovements).values({
+          direction: "out",
+          amount: values.amount,
+          occurredOn: values.paidOn,
+          categoryId: expenseCategoryId,
+          paymentMethodId,
+          description: `Pago de deuda personal${values.note ? `: ${values.note}` : ""}`,
+          source: "personal_debt_payment",
+          sourceId: transaction.id,
+        });
+      }
     });
   } catch {
     redirect("/personal?error=pago");
   }
   revalidatePath("/");
   revalidatePath("/personal");
-  redirect("/personal?pago=guardado");
+  if (values.paidFrom === "business") revalidatePath("/negocio");
+  redirect(`/personal?pago=guardado&desde=${values.paidFrom}`);
+}
+
+export async function updateDebtPaymentSource(formData: FormData) {
+  await requireAuth();
+  const parsed = z.object({
+    paymentId: z.string().uuid(),
+    paidFrom: z.enum(["personal", "business"]),
+    paymentMethod: z.string().trim().min(1).max(80),
+  }).safeParse(Object.fromEntries(formData.entries()));
+  if (!parsed.success || !db) redirect("/personal?error=pago");
+  const values = parsed.data;
+  try {
+    const paymentMethodId = await findOrCreatePaymentMethod(values.paymentMethod);
+    await db.transaction(async (tx) => {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext('business-cash'))`);
+      const [payment] = await tx.select({
+        amount: personalDebtPayments.amount,
+        paidOn: personalDebtPayments.paidOn,
+        debtId: personalDebtPayments.debtId,
+        transactionId: personalDebtPayments.personalTransactionId,
+        categoryId: personalTransactions.categoryId,
+        description: personalTransactions.description,
+      }).from(personalDebtPayments)
+        .leftJoin(personalTransactions, eq(personalDebtPayments.personalTransactionId, personalTransactions.id))
+        .where(eq(personalDebtPayments.id, values.paymentId)).limit(1);
+      if (!payment?.transactionId) throw new Error("El pago no tiene un movimiento asociado.");
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`personal-debt:${payment.debtId}`}))`);
+      await tx.update(personalTransactions).set({
+        source: values.paidFrom === "business" ? "Caja del negocio" : "Cuenta personal",
+        paymentMethodId,
+      }).where(eq(personalTransactions.id, payment.transactionId));
+      await tx.delete(businessCashMovements).where(and(
+        eq(businessCashMovements.source, "personal_debt_payment"),
+        eq(businessCashMovements.sourceId, payment.transactionId),
+      ));
+      if (values.paidFrom === "business") {
+        await tx.insert(businessCashMovements).values({
+          direction: "out",
+          amount: payment.amount,
+          occurredOn: payment.paidOn,
+          categoryId: payment.categoryId,
+          paymentMethodId,
+          description: `Pago de deuda personal${payment.description ? `: ${payment.description}` : ""}`,
+          source: "personal_debt_payment",
+          sourceId: payment.transactionId,
+        }).onConflictDoNothing();
+      }
+    });
+  } catch {
+    redirect("/personal?error=pago");
+  }
+  revalidatePath("/");
+  revalidatePath("/personal");
+  revalidatePath("/negocio");
+  redirect(`/personal?pago=actualizado&desde=${values.paidFrom}`);
 }
 
 export async function adjustEmergencyFund(formData: FormData) {

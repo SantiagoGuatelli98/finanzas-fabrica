@@ -14,7 +14,17 @@ export async function getPersonalData() {
     const [transactions, debts, debtPayments, categoryRows, paymentMethodRows, monthlyIncome, monthlyExpenses, settingsRows, fundRows, recurringRows, occurrenceRows] = await Promise.all([
       db.select().from(personalTransactions).orderBy(desc(personalTransactions.occurredOn), desc(personalTransactions.createdAt)).limit(30),
       db.select().from(personalDebts).where(isNull(personalDebts.archivedAt)).orderBy(desc(personalDebts.openedOn)),
-      db.select().from(personalDebtPayments),
+      db.select({
+        id: personalDebtPayments.id,
+        debtId: personalDebtPayments.debtId,
+        amount: personalDebtPayments.amount,
+        paidOn: personalDebtPayments.paidOn,
+        note: personalDebtPayments.note,
+        personalTransactionId: personalDebtPayments.personalTransactionId,
+        source: personalTransactions.source,
+        paymentMethodId: personalTransactions.paymentMethodId,
+      }).from(personalDebtPayments)
+        .leftJoin(personalTransactions, eq(personalDebtPayments.personalTransactionId, personalTransactions.id)),
       db.select({ id: categories.id, name: categories.name }).from(categories).where(and(eq(categories.scope, "personal"), eq(categories.active, true))).orderBy(categories.name),
       db.select({ id: paymentMethods.id, name: paymentMethods.name }).from(paymentMethods).where(eq(paymentMethods.active, true)).orderBy(paymentMethods.name),
       db.select({ amount: sql<string>`coalesce(sum(${personalTransactions.amount}), 0)` }).from(personalTransactions)

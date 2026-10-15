@@ -2,7 +2,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import Link from "next/link";
 import Decimal from "decimal.js";
-import { adjustEmergencyFund, createPersonalDebt, createPersonalTransaction, registerDebtPayment } from "./actions";
+import { adjustEmergencyFund, createPersonalDebt, createPersonalTransaction, registerDebtPayment, updateDebtPaymentSource } from "./actions";
 import { ServicesCalendar } from "./services-calendar";
 import { getPersonalData } from "@/lib/personal";
 import { WorkspaceFrame } from "@/components/workspace-navigation";
@@ -28,6 +28,7 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
   const today = todayLocal();
   const monthlyIncome = configured ? new Decimal(data.monthlyIncome) : new Decimal(0);
   const monthlyExpenses = configured ? new Decimal(data.monthlyExpenses) : new Decimal(0);
+  const debtPayments = configured ? data.debtPayments : [];
   const paidByDebt = new Map<string, Decimal>();
   const activeDebtIds = new Set(configured ? data.debts.map((debt) => debt.id) : []);
   if (configured) for (const payment of data.debtPayments) if (activeDebtIds.has(payment.debtId)) paidByDebt.set(payment.debtId, (paidByDebt.get(payment.debtId) ?? new Decimal(0)).plus(payment.amount));
@@ -41,7 +42,7 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
   const daysUntilTarget = targetDate ? Math.ceil((new Date(`${targetDate}T12:00:00-03:00`).getTime() - new Date(`${today}T12:00:00-03:00`).getTime()) / 86_400_000) : null;
   const monthlyDebtGoal = daysUntilTarget === null || daysUntilTarget < 0 ? null : balanceDebt.times(30.4375).div(Decimal.max(1, daysUntilTarget)).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
   const weeklyDebtGoal = daysUntilTarget === null || daysUntilTarget < 0 ? null : balanceDebt.times(7).div(Decimal.max(1, daysUntilTarget)).toDecimalPlaces(0, Decimal.ROUND_HALF_UP);
-  const statusMessage = params.guardado ? "Movimiento registrado." : params.deuda ? "Deuda registrada." : params.pago ? "Pago de deuda registrado." : params.fondo ? "Fondo de emergencia actualizado." : params.recurrente ? "Gasto recurrente actualizado. Los pendientes solo se marcan pagados cuando lo confirmás." : params.pendiente ? "Pendiente mensual creado." : params.error ? "No se pudo guardar. Revisá los campos y el saldo pendiente." : "";
+  const statusMessage = params.guardado ? "Movimiento registrado." : params.deuda ? "Deuda registrada." : params.pago === "actualizado" ? "Origen del pago actualizado y caja recalculada." : params.pago ? params.desde === "business" ? "Pago registrado y descontado de la caja del negocio." : "Pago de deuda registrado." : params.fondo ? "Fondo de emergencia actualizado." : params.recurrente ? "Gasto recurrente actualizado. Los pendientes solo se marcan pagados cuando lo confirmás." : params.pendiente ? "Pendiente mensual creado." : params.error ? "No se pudo guardar. Revisá los campos y el saldo pendiente." : "";
 
   const movementType = params.tipo === "ingreso" ? "income" : "expense";
   return (
@@ -96,14 +97,29 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
 
       <section className="panel debt-list-panel">
         <div className="panel-heading"><div><span className="eyebrow">Saldo y pagos parciales</span><h2>Tu lista de deudas</h2></div><span className="panel-count">{configured ? data.debts.length : 0}</span></div>
+        <p className="section-help">En pagos anteriores, elegí de dónde salió la plata y tocá Actualizar para corregir la caja sin duplicar el gasto.</p>
         {!configured || data.debts.length === 0 ? <p className="empty-state">Todavía no hay deudas registradas.</p> : <div className="debt-list">{data.debts.map((debt) => {
           const paid = paidByDebt.get(debt.id) ?? new Decimal(0);
           const remaining = Decimal.max(0, new Decimal(debt.originalAmount).minus(paid));
+          const payments = debtPayments.filter((payment) => payment.debtId === debt.id);
           return <article className="debt-row" key={debt.id}>
             <div className="debt-row-main"><strong>{debt.name}</strong><span>{debt.creditor || "Acreedor sin especificar"} · Inicial {money(debt.originalAmount, currency)}</span></div>
             <div className="debt-row-balance"><span>Saldo</span><strong>{money(remaining, currency)}</strong><small>{money(paid, currency)} pagados</small></div>
-            {!remaining.isZero() && <form action={registerDebtPayment} className="payment-inline"><input type="hidden" name="debtId" value={debt.id} /><label><span className="sr-only">Monto del pago de {debt.name}</span><input name="amount" inputMode="decimal" placeholder="Pago" required /></label><label><span className="sr-only">Fecha del pago</span><input name="paidOn" type="date" defaultValue={today} required /></label><label><span className="sr-only">Categoría de {debt.name}</span><input name="category" list="personal-categories" placeholder="Categoría" required /></label><button className="small-button" type="submit" disabled={!configured}>Registrar pago</button></form>}
+            {!remaining.isZero() && <form action={registerDebtPayment} className="payment-inline"><input type="hidden" name="debtId" value={debt.id} /><label><span className="sr-only">Monto del pago de {debt.name}</span><input name="amount" inputMode="decimal" placeholder="Pago" required /></label><label><span className="sr-only">Fecha del pago</span><input name="paidOn" type="date" defaultValue={today} required /></label><label><span className="sr-only">Categoría de {debt.name}</span><input name="category" list="personal-categories" placeholder="Categoría" required /></label><label><span className="sr-only">Desde dónde pagaste</span><select name="paidFrom" defaultValue="business" required><option value="business">Caja del negocio</option><option value="personal">Cuenta personal</option></select></label><label><span className="sr-only">Medio de pago</span><select name="paymentMethod" defaultValue="Billetera virtual" required><option>Billetera virtual</option><option>Mercado Pago</option><option>Transferencia</option><option>Efectivo</option><option>Tarjeta de débito</option><option>Tarjeta de crédito</option></select></label><button className="small-button" type="submit" disabled={!configured}>Registrar pago</button></form>}
             {remaining.isZero() && <span className="paid-badge">Pagada</span>}
+            {payments.length > 0 && <div className="debt-payment-history"><strong>Pagos registrados</strong>{payments.map((payment) => {
+              const currentSource = payment.source === "Caja del negocio" ? "business" : payment.source === "Cuenta personal" ? "personal" : "business";
+              const currentMethod = data.configured && !("error" in data) ? data.paymentMethods.find((method) => method.id === payment.paymentMethodId)?.name ?? "Billetera virtual" : "Billetera virtual";
+              return <div className="debt-payment-history-row" key={payment.id}>
+                <span>{dateLabel(payment.paidOn)} · {money(payment.amount, currency)}</span>
+                <form action={updateDebtPaymentSource} className="debt-payment-source-form">
+                  <input type="hidden" name="paymentId" value={payment.id} />
+                  <label><span className="sr-only">Origen del pago</span><select name="paidFrom" defaultValue={currentSource}><option value="business">Caja del negocio</option><option value="personal">Cuenta personal</option></select></label>
+                  <label><span className="sr-only">Medio de pago</span><select name="paymentMethod" defaultValue={currentMethod}><option>Billetera virtual</option><option>Mercado Pago</option><option>Transferencia</option><option>Efectivo</option><option>Tarjeta de débito</option><option>Tarjeta de crédito</option></select></label>
+                  <button className="small-button" type="submit" disabled={!configured}>Actualizar</button>
+                </form>
+              </div>;
+            })}</div>}
           </article>;
         })}</div>}
       </section>

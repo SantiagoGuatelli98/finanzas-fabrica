@@ -262,8 +262,8 @@ h1 { margin: 8px 0 4px; font-family: var(--font-display); font-size: clamp(28px,
 .panel-count { display: grid; place-items: center; min-width: 25px; height: 25px; padding: 0 6px; border-radius: 99px; background: #f4f0ec; color: #766e66; font-size: 10px; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px 12px; }
 .form-grid label { display: grid; gap: 6px; color: #716b64; font-size: 9px; font-weight: 650; }
-.form-grid input, .form-grid select, .form-grid textarea, .payment-inline input { min-width: 0; width: 100%; border: 1px solid #e6e0d8; border-radius: 8px; background: #fff; outline: none; padding: 10px 11px; color: var(--ink); font-size: 11px; font-weight: 400; transition: border-color .15s, box-shadow .15s; }
-.form-grid input:focus, .form-grid select:focus, .form-grid textarea:focus, .payment-inline input:focus { border-color: #ca7382; box-shadow: 0 0 0 3px #b7193612; }
+.form-grid input, .form-grid select, .form-grid textarea, .payment-inline input, .payment-inline select { min-width: 0; width: 100%; border: 1px solid #e6e0d8; border-radius: 8px; background: #fff; outline: none; padding: 10px 11px; color: var(--ink); font-size: 11px; font-weight: 400; transition: border-color .15s, box-shadow .15s; }
+.form-grid input:focus, .form-grid select:focus, .form-grid textarea:focus, .payment-inline input:focus, .payment-inline select:focus { border-color: #ca7382; box-shadow: 0 0 0 3px #b7193612; }
 .form-grid input::placeholder, .form-grid textarea::placeholder, .payment-inline input::placeholder { color: #b0a9a1; }
 .form-grid textarea { resize: vertical; min-height: 57px; }
 .form-wide { grid-column: 1 / -1; }
@@ -293,8 +293,15 @@ button:disabled { cursor: not-allowed; opacity: .48; }
 .debt-row-balance { display: grid; justify-items: end; gap: 3px; }
 .debt-row-balance span { color: #969087; font-size: 8px; }
 .debt-row-balance strong { font-size: 11px; }
-.payment-inline { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 6px; align-items: center; }
+.debt-payment-history { grid-column: 1 / -1; display: grid; gap: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+.debt-payment-history > strong { color: #766e66; font-size: 10px; }
+.debt-payment-history-row { display: grid; grid-template-columns: minmax(150px, 1fr) minmax(390px, 1.5fr); align-items: center; gap: 10px; color: #716b64; font-size: 10px; }
+.debt-payment-source-form { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px; align-items: center; }
+.debt-payment-source-form select { min-width: 0; width: 100%; min-height: 36px; border: 1px solid #e6e0d8; border-radius: 8px; background: #fff; padding: 7px 8px; color: var(--ink); font-size: 10px; }
+.debt-payment-source-form .small-button { min-height: 36px; }
+.payment-inline { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) auto; gap: 6px; align-items: center; }
 .payment-inline input { padding: 8px 8px; font-size: 9px; }
+.payment-inline select { padding: 8px 6px; font-size: 9px; }
 .small-button { white-space: nowrap; padding: 9px 10px; color: #fff; background: var(--brand); font-size: 9px; }
 .paid-badge { padding: 6px 9px; border-radius: 99px; background: #eaf4ee; color: var(--positive); font-size: 9px; }
 .empty-state { margin: 0; padding: 17px 12px; border-top: 1px solid var(--line); color: #99928a; font-size: 10px; }
@@ -569,6 +576,9 @@ td { padding: 11px 12px; border-top: 1px solid #f1ede8; color: #5c5751; font-siz
   .debt-plan span { grid-column: 1 / -1; }
   .payment-inline { grid-column: 1 / -1; grid-template-columns: 1fr 1fr; }
   .payment-inline .small-button { grid-column: 1 / -1; }
+  .debt-payment-history-row { grid-template-columns: 1fr; gap: 6px; }
+  .debt-payment-source-form { grid-template-columns: 1fr 1fr; }
+  .debt-payment-source-form .small-button { grid-column: 1 / -1; }
   .debt-row-main span { max-width: 200px; line-height: 1.45; }
   th, td { padding-inline: 9px; }
 }
@@ -613,7 +623,7 @@ td { padding: 11px 12px; border-top: 1px solid #f1ede8; color: #5c5751; font-siz
 .panel-heading h2 { font-size: 22px; }
 .form-grid label, .editable-row label, .supplier-form label, .order-notes, .payment-form label { font-size: 12px; }
 .form-grid input, .form-grid select, .form-grid textarea,
-.payment-inline input, .editable-row input, .editable-row select,
+.payment-inline input, .payment-inline select, .editable-row input, .editable-row select,
 .supplier-form input, .order-line select, .order-line input,
 .payment-form input, .add-list-form input, .simple-edit-row > input:not([type=hidden]),
 .simple-edit-row select, .order-notes textarea {
