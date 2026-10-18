@@ -38,6 +38,7 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
     return (!query || searchText.includes(query)) && (!stageFilter || order.stage === stageFilter) && matchesPayment;
   }) : [];
   const hasFilters = Boolean(query || stageFilter || paymentFilter);
+  const quickReceipts = ready ? data.quickReceipts.filter((receipt) => !query || [receipt.description, receipt.category, receipt.paymentMethod, receipt.occurredOn].some((value) => value?.toLocaleLowerCase("es-AR").includes(query))) : [];
   const message = params.error === "con-cobros" ? "Este pedido ya tiene cobros. No se borró para conservar esos movimientos; podés cancelarlo." : params.borrado ? "Pedido borrado." : params.error ? "No se pudo completar la operación. Revisá los datos y volvé a intentar." : params.creado === "cobrado" ? "Pedido guardado y cobrado. El total ya está registrado en caja." : params.creado ? "Pedido guardado pendiente. Todavía no aumentó la caja." : params.pago ? "Cobro guardado; la caja solo aumentó por el importe recibido." : params.estado ? "Estado del pedido actualizado." : "";
   const today = todayLocal();
   return <div className="module-page orders-page">
@@ -82,6 +83,15 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
           </div>
         </article>;
       })}</div>}
+    </section>
+    <section className="panel order-list-panel quick-receipts-panel" id="cobros-rapidos">
+      <div className="panel-heading"><div><span className="eyebrow">Ingresos fuera de pedidos</span><h2>Cobros rápidos</h2></div><span className="panel-count">{ready ? quickReceipts.length : 0}</span></div>
+      <p className="section-help">Acá quedan los cobros que anotaste directo desde Inicio, sin asociarlos a un cliente ni crear un pedido.</p>
+      {!ready ? <p className="empty-state">Conectá Neon para ver el historial de cobros rápidos.</p> : !quickReceipts.length ? <p className="empty-state">Todavía no hay cobros rápidos{query ? " que coincidan con la búsqueda." : ". Podés registrarlos desde el acceso rápido de Inicio."}</p> : <div className="quick-receipt-list">{quickReceipts.map((receipt) => <article className="quick-receipt-card" key={receipt.id}>
+        <div className="quick-receipt-main"><strong>{receipt.description || "Cobro rápido"}</strong><span>{receipt.category || "Ingreso"}{receipt.paymentMethod ? ` · ${receipt.paymentMethod}` : ""}</span></div>
+        <time dateTime={receipt.occurredOn}>{dateLabel(receipt.occurredOn)}</time>
+        <strong className="quick-receipt-amount">{money(receipt.amount, currency)}</strong>
+      </article>)}</div>}
     </section>
   </div>;
 }
