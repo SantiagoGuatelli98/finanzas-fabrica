@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { toJpeg } from "html-to-image";
 
+function isMobileDevice() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
 export function OrderDocumentActions({ orderNumber, message }: { orderNumber: string; message: string }) {
   const [text, setText] = useState(message);
   const [busy, setBusy] = useState(false);
@@ -44,21 +48,25 @@ export function OrderDocumentActions({ orderNumber, message }: { orderNumber: st
 
   async function shareWhatsApp() {
     setBusy(true); setStatus("");
-    window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+    const useNativeWhatsApp = isMobileDevice();
+    const whatsappUrl = useNativeWhatsApp
+      ? `https://wa.me/?text=${encodeURIComponent(text)}`
+      : `https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     try {
       const blob = await makeImage();
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url; anchor.download = `${orderNumber}.jpg`; anchor.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      setStatus("WhatsApp Web abrió el mensaje. Adjuntá la boleta descargada y tocá Enviar.");
+      setStatus(`${useNativeWhatsApp ? "WhatsApp abrió" : "WhatsApp Web abrió"} el mensaje. Adjuntá la boleta descargada y tocá Enviar.`);
     } catch {
-      setStatus("WhatsApp Web abrió el mensaje. No se pudo descargar la boleta; probá «Descargar imagen».");
+      setStatus(`${useNativeWhatsApp ? "WhatsApp abrió" : "WhatsApp Web abrió"} el mensaje. No se pudo descargar la boleta; probá «Descargar imagen».`);
     } finally { setBusy(false); }
   }
 
   return <div className="document-actions">
-    <div className="document-action-buttons"><button type="button" className="doc-button red" onClick={shareWhatsApp} disabled={busy}>{busy ? "Preparando…" : "Abrir WhatsApp Web"}</button><button type="button" className="doc-button" onClick={() => window.print()}>Imprimir / guardar PDF</button><button type="button" className="doc-button" onClick={downloadImage} disabled={busy}>Descargar imagen</button></div>
+    <div className="document-action-buttons"><button type="button" className="doc-button red" onClick={shareWhatsApp} disabled={busy}>{busy ? "Preparando…" : "Compartir por WhatsApp"}</button><button type="button" className="doc-button" onClick={() => window.print()}>Imprimir / guardar PDF</button><button type="button" className="doc-button" onClick={downloadImage} disabled={busy}>Descargar imagen</button></div>
     <label className="message-editor">Mensaje para WhatsApp<textarea value={text} onChange={(event) => setText(event.target.value)} rows={5} /></label>
     {status && <p className="share-status" role="status">{status}</p>}
   </div>;
