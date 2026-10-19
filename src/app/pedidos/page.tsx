@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { randomUUID } from "node:crypto";
 import Decimal from "decimal.js";
 import { registerOrderPayment, scheduleOrderDelivery, updateOrderStage } from "./actions";
+import { BulkOrderPaymentForm } from "./bulk-order-payment-form";
 import { DeleteOrderForm } from "./delete-order-form";
 import { NewOrderForm } from "./new-order-form";
 import { getOrdersData } from "@/lib/orders";
@@ -39,7 +40,8 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
   }) : [];
   const hasFilters = Boolean(query || stageFilter || paymentFilter);
   const quickReceipts = ready ? data.quickReceipts.filter((receipt) => !query || [receipt.description, receipt.category, receipt.paymentMethod, receipt.occurredOn].some((value) => value?.toLocaleLowerCase("es-AR").includes(query))) : [];
-  const message = params.error === "con-cobros" ? "Este pedido ya tiene cobros. No se borró para conservar esos movimientos; podés cancelarlo." : params.borrado ? "Pedido borrado." : params.error ? "No se pudo completar la operación. Revisá los datos y volvé a intentar." : params.creado === "cobrado" ? "Pedido guardado y cobrado. El total ya está registrado en caja." : params.creado ? "Pedido guardado pendiente. Todavía no aumentó la caja." : params.pago ? "Cobro guardado; la caja solo aumentó por el importe recibido." : params.estado ? "Estado del pedido actualizado." : "";
+  const bulkPaidCount = typeof params.cantidad === "string" ? Number.parseInt(params.cantidad, 10) : 0;
+  const message = params.error === "con-cobros" ? "Este pedido ya tiene cobros. No se borró para conservar esos movimientos; podés cancelarlo." : params.borrado ? "Pedido borrado." : params.error === "pago-multiple" ? "No se pudo guardar el cobro conjunto. Actualizá la lista y revisá que los pedidos sigan pendientes." : params.error ? "No se pudo completar la operación. Revisá los datos y volvé a intentar." : params.creado === "cobrado" ? "Pedido guardado y cobrado. El total ya está registrado en caja." : params.creado ? "Pedido guardado pendiente. Todavía no aumentó la caja." : params.pago === "multiple" ? `Cobro registrado para ${bulkPaidCount} pedidos. Cada saldo quedó asociado a su pedido y a la caja.` : params.pago ? "Cobro guardado; la caja solo aumentó por el importe recibido." : params.estado ? "Estado del pedido actualizado." : "";
   const today = todayLocal();
   return <div className="module-page orders-page">
     <header className="module-head"><a className="back-link" href="/#inicio">← Volver al resumen</a><div className="eyebrow">Ventas y cobranzas</div><h1>Pedidos.</h1><p>Vendido no significa cobrado. Un pedido solo suma a caja cuando registrás un pago real.</p></header>
@@ -62,6 +64,7 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
         {hasFilters && <a className="clear-order-filters" href="/pedidos#cuentas-por-cobrar">Limpiar</a>}
       </form>
       {ready && hasFilters && <p className="filter-count">Mostrando {orders.length} de {data.orders.length} pedidos</p>}
+      {ready && <BulkOrderPaymentForm paymentMethods={availablePaymentMethods} today={today} currency={currency} />}
       {!ready || !data.orders.length ? <p className="empty-state">Todavía no hay pedidos. Cuando guardes uno, aparece acá.</p> : !orders.length ? <p className="empty-state">No encontré pedidos con esos filtros. Probá otra búsqueda o limpiá los filtros.</p> : <div className="order-list">{orders.map((order) => {
         const lines = data.items.filter((item) => item.orderId === order.id);
         const received = data.payments.filter((payment) => payment.orderId === order.id).reduce((sum, payment) => sum.plus(payment.amount), new Decimal(0));
@@ -69,6 +72,7 @@ async function OrdersContent({ searchParams }: { searchParams: Promise<Record<st
         const payStatus = order.stage === "cancelled" ? "Cancelado" : outstanding.isZero() ? "Cobrado" : received.isZero() ? "Pendiente" : "Parcial";
         const next = stageNext[order.stage];
         return <article className="order-card" key={order.id} id={`pedido-${order.id}`}>
+          {order.stage !== "cancelled" && outstanding.gt(0) && <label className="bulk-order-select"><input type="checkbox" data-bulk-order value={order.id} data-outstanding={outstanding.toFixed(2)} /><span>Seleccionar para cobro conjunto</span></label>}
           <div className="order-card-top"><div><span className="order-number">PED-{String(order.orderNumber).padStart(6, "0")}</span><span className="order-date">{dateLabel(order.createdOn)}</span></div><span className={`stage-badge stage-${order.stage}`}>{stageLabels[order.stage]}</span></div>
           <div className="order-client"><strong>{order.clientName}</strong><span>{payStatus}</span></div>
           {order.deliveryOn && <p className="order-delivery-date">Entrega: <time dateTime={order.deliveryOn}>{dateLabel(order.deliveryOn)}</time></p>}

@@ -978,6 +978,27 @@ body:has(.service-dialog[open]) { overflow: hidden; }
 .service-extra-fields { padding-top: 13px; border-top: 1px solid #eee2d8; }
 .service-extra-fields summary { min-height: 30px; margin-bottom: 8px; color: #9b8173; font-size: 12px; cursor: pointer; }
 .service-editor-form .primary-button { min-height: 49px; font-size: 14px; }
+.bulk-payment-hint { margin: 4px 0 13px; color: #817970; font-size: 13px; }
+.bulk-order-select { display: flex; align-items: center; gap: 9px; width: fit-content; margin: 0 0 12px; color: #6f675f; font-size: 12px; font-weight: 650; cursor: pointer; }
+.bulk-order-select input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); cursor: pointer; }
+.bulk-payment-bar { position: sticky; bottom: 12px; z-index: 5; display: grid; grid-template-columns: minmax(170px, 1fr) 140px 180px minmax(130px, 1fr) auto; gap: 10px; align-items: end; margin: 0 0 14px; padding: 13px; border: 1px solid #d9c8c3; border-radius: 13px; background: #fffdfa; box-shadow: 0 10px 28px #3b211e26; }
+.bulk-payment-summary { display: grid; gap: 5px; align-self: center; }
+.bulk-payment-summary strong { color: var(--ink); font-size: 14px; }
+.bulk-payment-summary span { color: var(--brand); font-size: 13px; font-weight: 700; }
+.bulk-payment-bar label { display: grid; gap: 5px; min-width: 0; color: #766e66; font-size: 11px; font-weight: 650; }
+.bulk-payment-bar input:not([type=hidden]), .bulk-payment-bar select { width: 100%; min-width: 0; min-height: 43px; padding: 9px; border: 1px solid #ded6cf; border-radius: 8px; background: white; color: var(--ink); font-size: 13px; }
+.bulk-payment-bar .primary-button { grid-column: auto; min-height: 43px; margin: 0; padding: 10px 13px; font-size: 12px; white-space: nowrap; }
+@media (max-width: 700px) {
+  .bulk-payment-hint { font-size: 13px; line-height: 1.5; }
+  .bulk-order-select { min-height: 40px; font-size: 13px; }
+  .bulk-payment-bar { bottom: calc(82px + env(safe-area-inset-bottom)); grid-template-columns: 1fr 1fr; gap: 9px; padding: 12px; }
+  .bulk-payment-summary, .bulk-payment-note, .bulk-payment-bar .primary-button { grid-column: 1 / -1; }
+  .bulk-payment-summary { grid-template-columns: 1fr auto; align-items: baseline; }
+  .bulk-payment-summary strong, .bulk-payment-summary span { font-size: 13px; }
+  .bulk-payment-bar label { font-size: 12px; }
+  .bulk-payment-bar input:not([type=hidden]), .bulk-payment-bar select { min-height: 47px; font-size: 15px; }
+  .bulk-payment-bar .primary-button { min-height: 49px; }
+}
 .service-form-error { margin: 0; padding: 11px 12px; border-radius: 9px; background: #fff0f2; color: #a32940; font-size: 12px; line-height: 1.5; }
 .service-form-note { margin: 0; color: #9a8173; font-size: 12px; line-height: 1.5; }
 .service-payment-summary { display: grid; gap: 7px; padding: 15px 17px; border: 1px solid #ecded2; border-radius: 11px; background: #faf6f0; }

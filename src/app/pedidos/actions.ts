@@ -147,6 +147,53 @@ export async function registerOrderPayment(formData: FormData) {
   redirect("/pedidos?pago=guardado");
 }
 
+export async function registerMultipleOrderPayments(formData: FormData) {
+  await requireAuth();
+  let rawOrderIds: unknown;
+  try { rawOrderIds = JSON.parse(String(formData.get("orderIds") ?? "")); } catch { redirect("/pedidos?error=pago-multiple"); }
+  const parsed = z.object({
+    orderIds: z.array(z.string().uuid()).min(1).max(100),
+    receivedOn: dateText,
+    paymentMethod: z.string().trim().min(1).max(80),
+    note: noteText,
+  }).safeParse({ ...Object.fromEntries(formData.entries()), orderIds: rawOrderIds });
+  if (!db || !parsed.success) redirect("/pedidos?error=pago-multiple");
+  const orderIds = [...new Set(parsed.data.orderIds)].sort();
+  if (!orderIds.length) redirect("/pedidos?error=pago-multiple");
+  try {
+    const paymentMethodId = await getPaymentMethod(parsed.data.paymentMethod);
+    await db.transaction(async (tx) => {
+      for (const orderId of orderIds) await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`order:${orderId}`}))`);
+      const selectedOrders = await tx.select({ id: orders.id, total: orders.total, stage: orders.stage, orderNumber: orders.orderNumber })
+        .from(orders).where(inArray(orders.id, orderIds));
+      if (selectedOrders.length !== orderIds.length || selectedOrders.some((order) => order.stage === "cancelled")) throw new Error("Hay pedidos que no admiten cobros.");
+      const existingPayments = await tx.select({ orderId: payments.orderId, amount: payments.amount }).from(payments).where(inArray(payments.orderId, orderIds));
+      const paidByOrder = new Map<string, Decimal>();
+      for (const payment of existingPayments) paidByOrder.set(payment.orderId, (paidByOrder.get(payment.orderId) ?? new Decimal(0)).plus(payment.amount));
+      const balances = selectedOrders.map((order) => ({ order, outstanding: Decimal.max(0, new Decimal(order.total).minus(paidByOrder.get(order.id) ?? new Decimal(0))) }));
+      if (balances.some(({ outstanding }) => !outstanding.gt(0))) throw new Error("Seleccioná solo pedidos con saldo pendiente.");
+      for (const { order, outstanding } of balances) {
+        const paymentId = randomUUID();
+        const cashMovementId = randomUUID();
+        const amount = outstanding.toFixed(2);
+        await tx.insert(businessCashMovements).values({
+          id: cashMovementId, direction: "in", amount, occurredOn: parsed.data.receivedOn,
+          paymentMethodId, description: `Cobro de pedido PED-${String(order.orderNumber).padStart(6, "0")}`,
+          source: "order_payment", sourceId: paymentId,
+        });
+        await tx.insert(payments).values({
+          id: paymentId, orderId: order.id, amount, receivedOn: parsed.data.receivedOn,
+          paymentMethodId, note: parsed.data.note, cashMovementId,
+        });
+      }
+    });
+  } catch {
+    redirect("/pedidos?error=pago-multiple");
+  }
+  revalidatePath("/"); revalidatePath("/pedidos"); revalidatePath("/negocio");
+  redirect(`/pedidos?pago=multiple&cantidad=${orderIds.length}#cuentas-por-cobrar`);
+}
+
 const transitions: Record<string, string[]> = {
   created: ["sent", "cancelled"],
   sent: ["confirmed", "cancelled"],
