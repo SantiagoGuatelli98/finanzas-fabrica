@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { SubmitButton } from "./submit-button";
 import { registerMultipleOrderPayments } from "./actions";
 
 function formatMoney(amount: number, currency: string) {
@@ -34,7 +35,7 @@ export function BulkOrderPaymentForm({ paymentMethods, today, currency }: { paym
     idsField.current.value = JSON.stringify(checked.map((input) => input.value));
   }
 
-  if (!selection.ids.length) return <p className="bulk-payment-hint">Marcá los pedidos que te pagaron juntos. Se va a registrar el saldo completo pendiente de cada uno.</p>;
+  if (!selection.ids.length) return <p className="bulk-payment-hint">Marcá los pedidos que te pagaron juntos. Se cobra el saldo completo de cada uno y quedan entregados.</p>;
 
   return <form action={registerMultipleOrderPayments} className="bulk-payment-bar" onSubmit={prepareSubmit}>
     <input ref={idsField} type="hidden" name="orderIds" />
@@ -42,6 +43,6 @@ export function BulkOrderPaymentForm({ paymentMethods, today, currency }: { paym
     <label>Fecha<input type="date" name="receivedOn" defaultValue={today} required /></label>
     <label>Medio de pago<select name="paymentMethod" defaultValue={paymentMethods[0]} required>{paymentMethods.map((method) => <option value={method} key={method}>{method}</option>)}</select></label>
     <label className="bulk-payment-note">Nota<input name="note" placeholder="Opcional" maxLength={500} /></label>
-    <button className="primary-button" type="submit">Cobrar seleccionados <span>→</span></button>
+    <SubmitButton className="primary-button">Cobrar y entregar →</SubmitButton>
   </form>;
 }

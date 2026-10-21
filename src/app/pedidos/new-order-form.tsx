@@ -58,7 +58,7 @@ export function NewOrderForm({ products, clients, paymentMethods, requestKey, to
     <label className="order-notes">Observaciones<textarea name="notes" rows={2} placeholder="Aclaraciones para este pedido" maxLength={500} /></label>
     <div className="order-total-box"><div><span>Subtotal</span><strong>{money(subtotal)}</strong></div>{discountAmount.gt(0) && <div><span>Descuento</span><strong>− {money(discountAmount)}</strong></div>}<div className="grand-total"><span>Total del pedido</span><strong>{money(total)}</strong></div></div>
     <div className="order-save-box">
-      <div className="order-save-heading"><strong>¿Lo cobrás ahora?</strong><span>Si lo cobrás, se registra el total en caja junto con el pedido.</span></div>
+      <div className="order-save-heading"><strong>¿Lo cobrás ahora?</strong><span>Si lo cobrás, se registra el total en caja y el pedido queda entregado.</span></div>
       <div className="order-save-fields">
         <label>Medio de pago<select name="paymentMethod" defaultValue={paymentMethods[0] ?? "Efectivo"}>{paymentMethods.map((method) => <option value={method} key={method}>{method}</option>)}</select></label>
         <label>Fecha del cobro<input name="receivedOn" type="date" defaultValue={today} /></label>

@@ -97,7 +97,7 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
 
       <section className="panel debt-list-panel">
         <div className="panel-heading"><div><span className="eyebrow">Saldo y pagos parciales</span><h2>Tu lista de deudas</h2></div><span className="panel-count">{configured ? data.debts.length : 0}</span></div>
-        <p className="section-help">En pagos anteriores, elegí de dónde salió la plata y tocá Actualizar para corregir la caja sin duplicar el gasto.</p>
+        <p className="section-help">Si pagás desde la caja del negocio, el importe también se descuenta del disponible de Inicio. Sigue siendo un gasto personal, sin sumarse a los gastos de la fábrica.</p>
         {!configured || data.debts.length === 0 ? <p className="empty-state">Todavía no hay deudas registradas.</p> : <div className="debt-list">{data.debts.map((debt) => {
           const paid = paidByDebt.get(debt.id) ?? new Decimal(0);
           const remaining = Decimal.max(0, new Decimal(debt.originalAmount).minus(paid));
@@ -108,14 +108,14 @@ async function PersonalContent({ searchParams }: { searchParams: Promise<Record<
             {!remaining.isZero() && <form action={registerDebtPayment} className="payment-inline"><input type="hidden" name="debtId" value={debt.id} /><label><span className="sr-only">Monto del pago de {debt.name}</span><input name="amount" inputMode="decimal" placeholder="Pago" required /></label><label><span className="sr-only">Fecha del pago</span><input name="paidOn" type="date" defaultValue={today} required /></label><label><span className="sr-only">Categoría de {debt.name}</span><input name="category" list="personal-categories" placeholder="Categoría" required /></label><label><span className="sr-only">Desde dónde pagaste</span><select name="paidFrom" defaultValue="business" required><option value="business">Caja del negocio</option><option value="personal">Cuenta personal</option></select></label><label><span className="sr-only">Medio de pago</span><select name="paymentMethod" defaultValue="Billetera virtual" required><option>Billetera virtual</option><option>Mercado Pago</option><option>Transferencia</option><option>Efectivo</option><option>Tarjeta de débito</option><option>Tarjeta de crédito</option></select></label><button className="small-button" type="submit" disabled={!configured}>Registrar pago</button></form>}
             {remaining.isZero() && <span className="paid-badge">Pagada</span>}
             {payments.length > 0 && <div className="debt-payment-history"><strong>Pagos registrados</strong>{payments.map((payment) => {
-              const currentSource = payment.source === "Caja del negocio" ? "business" : payment.source === "Cuenta personal" ? "personal" : "business";
-              const currentMethod = data.configured && !("error" in data) ? data.paymentMethods.find((method) => method.id === payment.paymentMethodId)?.name ?? "Billetera virtual" : "Billetera virtual";
+              const currentSource = payment.source === "Caja del negocio" ? "business" : payment.source === "Cuenta personal" ? "personal" : "";
+              const currentMethod = data.configured && !("error" in data) ? data.paymentMethods.find((method) => method.id === payment.paymentMethodId)?.name ?? "" : "";
               return <div className="debt-payment-history-row" key={payment.id}>
                 <span>{dateLabel(payment.paidOn)} · {money(payment.amount, currency)}</span>
                 <form action={updateDebtPaymentSource} className="debt-payment-source-form">
                   <input type="hidden" name="paymentId" value={payment.id} />
-                  <label><span className="sr-only">Origen del pago</span><select name="paidFrom" defaultValue={currentSource}><option value="business">Caja del negocio</option><option value="personal">Cuenta personal</option></select></label>
-                  <label><span className="sr-only">Medio de pago</span><select name="paymentMethod" defaultValue={currentMethod}><option>Billetera virtual</option><option>Mercado Pago</option><option>Transferencia</option><option>Efectivo</option><option>Tarjeta de débito</option><option>Tarjeta de crédito</option></select></label>
+                  <label><span className="sr-only">Origen del pago</span><select name="paidFrom" defaultValue={currentSource} required><option value="" disabled>Elegí el origen</option><option value="business">Caja del negocio</option><option value="personal">Cuenta personal</option></select></label>
+                  <label><span className="sr-only">Medio de pago</span><select name="paymentMethod" defaultValue={currentMethod} required><option value="" disabled>Elegí el medio</option><option>Billetera virtual</option><option>Mercado Pago</option><option>Transferencia</option><option>Efectivo</option><option>Tarjeta de débito</option><option>Tarjeta de crédito</option></select></label>
                   <button className="small-button" type="submit" disabled={!configured}>Actualizar</button>
                 </form>
               </div>;
