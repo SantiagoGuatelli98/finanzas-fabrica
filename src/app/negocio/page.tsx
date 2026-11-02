@@ -2,12 +2,14 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { randomUUID } from "node:crypto";
 import Decimal from "decimal.js";
+import Link from "next/link";
 import { createBusinessExpense, createClient, createManualBusinessIncome, createProduct, createSupplier, createSupplierDebt, registerSupplierPayment, updateClient, updateProduct, withdrawBusinessFunds } from "./actions";
 import { getBusinessSetup } from "@/lib/business";
 import { WorkspaceFrame } from "@/components/workspace-navigation";
 
 function money(value: Decimal.Value | string, currency = "ARS") { return new Intl.NumberFormat("es-AR", { style: "currency", currency, maximumFractionDigits: 2 }).format(Number(value)); }
 function todayLocal() { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Argentina/Buenos_Aires", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
+function dateLabel(value: string) { return new Intl.DateTimeFormat("es-AR", { dateStyle: "medium", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date(`${value}T12:00:00-03:00`)); }
 
 async function BusinessContent({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
@@ -17,9 +19,33 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
   const status = params.error ? "No se pudo guardar. Revisá los campos y la conexión." : params.producto ? "Producto actualizado." : params.cliente ? "Cliente actualizado." : params.proveedor ? "Proveedor registrado." : params.gasto ? "Gasto del negocio registrado y descontado de caja." : params.deuda ? "Deuda con proveedor registrada." : params["pago-proveedor"] ? "Pago al proveedor registrado y descontado de caja." : params.retiro ? "Retiro vinculado: salida del negocio e ingreso personal, sin doble contabilización." : params.ingreso ? "Ingreso manual registrado en caja." : "";
   const today = todayLocal();
   const supplierPaid = new Map<string, Decimal>();
-  if (ready) for (const payment of data.supplierPayments) supplierPaid.set(payment.debtId, (supplierPaid.get(payment.debtId) ?? new Decimal(0)).plus(payment.amount));
+  const supplierPaymentsByDebt = new Map<string, { id: string; debtId: string; amount: string; paidOn: string; note: string | null; paymentMethod: string | null }[]>();
+  if (ready) for (const payment of data.supplierPayments) {
+    supplierPaid.set(payment.debtId, (supplierPaid.get(payment.debtId) ?? new Decimal(0)).plus(payment.amount));
+    supplierPaymentsByDebt.set(payment.debtId, [...(supplierPaymentsByDebt.get(payment.debtId) ?? []), payment]);
+  }
+  const historyQuery = typeof params.boleta === "string" ? params.boleta.trim().toLocaleLowerCase("es-AR") : "";
+  const supplierHistory = ready ? [
+    ...data.supplierBills.map((bill) => ({
+      id: `paid-${bill.id}`, supplier: bill.supplierName, date: bill.occurredOn, concept: bill.description,
+      total: bill.amount, paid: bill.amount, balance: "0", status: "Pagada", kind: "paid" as const,
+      payments: [{ id: bill.id, date: bill.occurredOn, amount: bill.amount, method: bill.paymentMethod, note: bill.notes }],
+    })),
+    ...data.debts.map((debt) => {
+      const payments = supplierPaymentsByDebt.get(debt.id) ?? [];
+      const paid = supplierPaid.get(debt.id) ?? new Decimal(0);
+      const balance = Decimal.max(0, new Decimal(debt.originalAmount).minus(paid));
+      return {
+        id: `debt-${debt.id}`, supplier: data.suppliers.find((supplier) => supplier.id === debt.supplierId)?.name ?? "Proveedor",
+        date: debt.openedOn, concept: debt.concept, total: debt.originalAmount, paid: paid.toFixed(2), balance: balance.toFixed(2),
+        status: balance.isZero() ? "Pagada" : paid.gt(0) ? "Parcial" : "Pendiente", kind: "debt" as const,
+        payments: payments.map((payment) => ({ id: payment.id, date: payment.paidOn, amount: payment.amount, method: payment.paymentMethod, note: payment.note })),
+      };
+    }),
+  ].filter((entry) => !historyQuery || [entry.supplier, entry.concept, entry.date, ...entry.payments.map((payment) => `${payment.date} ${payment.method ?? ""} ${payment.note ?? ""}`)].join(" ").toLocaleLowerCase("es-AR").includes(historyQuery))
+    .sort((a, b) => b.date.localeCompare(a.date)) : [];
   return <div className="module-page">
-    <header className="module-head"><a className="back-link" href="/#inicio">← Volver al resumen</a><div className="eyebrow">Operación del negocio</div><h1>La fábrica.</h1><p>Productos, clientes y proveedores. Editá los datos desde acá cuando cambien.</p></header>
+    <header className="module-head"><Link className="back-link" href="/#inicio">← Volver al resumen</Link><div className="eyebrow">Operación del negocio</div><h1>La fábrica.</h1><p>Productos, clientes y proveedores. Editá los datos desde acá cuando cambien.</p></header>
     {!ready && <div className="connection-alert"><span>◌</span><div><strong>{"error" in data ? "No se pudo leer Neon" : "Conectá Neon para empezar"}</strong> Los cambios se guardan en PostgreSQL.</div></div>}
     {status && <div className={`notice ${params.error ? "error" : "success"}`} role="status">{status}</div>}
 
@@ -68,6 +94,7 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
         <label>Proveedor<input name="name" placeholder="Nombre" maxLength={120} required /></label><label>Teléfono<input name="phone" placeholder="Opcional" maxLength={80} /></label><label>Descripción<input name="description" placeholder="Opcional" maxLength={240} /></label><label>Nota<input name="notes" placeholder="Opcional" maxLength={500} /></label><button className="secondary-button" type="submit" disabled={!ready}>Agregar proveedor</button>
       </form>
       {!ready || data.suppliers.length === 0 ? <p className="empty-state">Todavía no hay proveedores.</p> : <div className="supplier-chips">{data.suppliers.map((supplier) => <div className="supplier-chip" key={supplier.id}><strong>{supplier.name}</strong>{supplier.phone && <span>{supplier.phone}</span>}</div>)}</div>}
+      {ready && <a className="supplier-history-jump" href="#historial-boletas">Ver boletas y pagos registrados ↓</a>}
     </section>
 
     <section className="panel manual-income-panel"><div className="panel-heading"><div><span className="eyebrow">Caso excepcional</span><h2>Registrar ingreso manual</h2></div><span className="panel-index">05</span></div>
@@ -123,6 +150,21 @@ async function BusinessContent({ searchParams }: { searchParams: Promise<Record<
           </article>;
         })}</div>}
       </div>
+    </section>
+    <section className="panel supplier-history-panel" id="historial-boletas">
+      <div className="panel-heading"><div><span className="eyebrow">Registro de compras</span><h2>Boletas y pagos</h2></div><span className="panel-count">{ready ? supplierHistory.length : 0}</span></div>
+      <p className="section-help">Revisá boletas pagadas y deudas a cuenta, con el detalle de cada pago. Las deudas iniciales siguen separadas de las boletas que fuiste cargando.</p>
+      <form className="supplier-history-search" method="get" action="/negocio#historial-boletas">
+        <label>Buscar proveedor, concepto, fecha o medio<input type="search" name="boleta" defaultValue={typeof params.boleta === "string" ? params.boleta : ""} placeholder="Ej. harina, Luis, octubre…" /></label>
+        <button className="secondary-button" type="submit">Buscar</button>
+        {historyQuery && <a href="/negocio#historial-boletas">Limpiar</a>}
+      </form>
+      {!ready ? <p className="empty-state">Conectá Neon para consultar las boletas y pagos guardados.</p> : !supplierHistory.length ? <p className="empty-state">{historyQuery ? "No encontré boletas o pagos con esa búsqueda." : "Todavía no hay boletas asociadas a proveedores. Las compras pagadas aparecen al registrarlas como gasto con proveedor; las que quedan pendientes, en Deudas y pagos."}</p> : <div className="supplier-history-list">{supplierHistory.map((entry) => <article className="supplier-history-card" key={entry.id}>
+        <div className="supplier-history-top"><div><strong>{entry.supplier}</strong><span>{dateLabel(entry.date)} · {entry.concept}</span></div><span className={`supplier-history-status ${entry.status === "Pagada" ? "is-paid" : entry.status === "Parcial" ? "is-partial" : "is-pending"}`}>{entry.status}</span></div>
+        <div className="supplier-history-totals"><div><span>Importe original</span><strong>{money(entry.total, currency)}</strong></div><div><span>Pagado</span><strong>{money(entry.paid, currency)}</strong></div><div><span>Saldo</span><strong className={Number(entry.balance) > 0 ? "pending-amount" : "amount-in"}>{money(entry.balance, currency)}</strong></div></div>
+        {entry.payments.length > 0 && <div className="supplier-history-payments"><strong>{entry.kind === "paid" ? "Pago registrado" : "Historial de pagos"}</strong>{entry.payments.map((payment) => <div key={payment.id}><span>{dateLabel(payment.date)}{payment.method ? ` · ${payment.method}` : ""}{payment.note ? ` · ${payment.note}` : ""}</span><b>{money(payment.amount, currency)}</b></div>)}</div>}
+      </article>)}</div>}
+      <p className="supplier-history-note">Si anotás ahora una boleta que pagaste antes, cargá su fecha real como gasto pagado. La salida se suma al registro de caja y corrige el saldo actual.</p>
     </section>
     <p className="module-footnote">Los registros financieros históricos se conservan. Los productos y clientes que ya se usaron se pueden desactivar para que no aparezcan en nuevas operaciones.</p>
   </div>;
