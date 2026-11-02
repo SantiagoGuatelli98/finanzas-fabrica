@@ -6,6 +6,7 @@ import { logout } from "@/app/login/actions";
 import { createManualBusinessIncome, createQuickPersonalExpense } from "@/app/negocio/actions";
 import { CrestPhoto } from "@/components/crest-photo";
 import { UpcomingOrders } from "@/components/upcoming-orders";
+import { MonthlyAnalytics } from "@/components/monthly-analytics";
 import { Icon, MobileNav, Sidebar } from "@/components/workspace-navigation";
 
 function money(value: string | undefined, currency = "ARS") {
@@ -27,11 +28,15 @@ function todayLocal() {
 
 async function DashboardContent({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await connection();
-  const [data, params] = await Promise.all([getDashboardData(), searchParams]);
+  const params = await searchParams;
+  const todayLocalDate = todayLocal();
+  const currentMonth = todayLocalDate.slice(0, 7);
+  const requestedMonth = typeof params.mes === "string" && /^\d{4}-(0[1-9]|1[0-2])$/.test(params.mes) && params.mes >= "1900-01" && params.mes <= currentMonth ? params.mes : currentMonth;
+  const data = await getDashboardData(requestedMonth);
   const today = new Intl.DateTimeFormat("es-AR", { dateStyle: "full", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
   const month = data.configured && !("error" in data)
     ? data.monthLabel.charAt(0).toUpperCase() + data.monthLabel.slice(1)
-    : new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date());
+    : new Intl.DateTimeFormat("es-AR", { month: "long", year: "numeric", timeZone: "America/Argentina/Buenos_Aires" }).format(new Date(`${requestedMonth}-01T12:00:00-03:00`));
   const isConnected = data.configured && !("error" in data);
   const currency = isConnected ? data.currency : "ARS";
 
@@ -95,26 +100,28 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Record
 
           <section className="overview-grid" aria-label="Resumen del negocio">
             <article className="cash-card">
-              <div className="cash-label">Dinero disponible · negocio</div>
+              <div className="cash-label">Dinero disponible hoy · negocio</div>
               <div className="cash-number">{money(isConnected ? data.businessCash : undefined, currency)}</div>
               <div className="cash-caption">Saldo calculado con los movimientos registrados</div>
               <div className="cash-footer"><span>En caja del negocio</span><strong>{isConnected ? "Según movimientos guardados" : "Esperando conexión"}</strong></div>
             </article>
             <article className="sold-card">
-              <div className="card-heading"><div className="card-title">COBRADO ESTE MES</div><span className="card-icon"><Icon name="trend" /></span></div>
+              <div className="card-heading"><div className="card-title">COBRADO EN {month.toLocaleUpperCase("es-AR")}</div><span className="card-icon"><Icon name="trend" /></span></div>
               <div className="sold-main"><span className="sold-number">{money(isConnected ? data.businessCollected : undefined, currency)}</span></div>
-              <div className="sold-breakdown"><div><div className="micro-label">Vendido este mes</div><div className="micro-value">{money(isConnected ? data.businessSold : undefined, currency)}</div></div><div><div className="micro-label">Pendiente de cobro</div><div className="micro-value">{money(isConnected ? data.receivable : undefined, currency)}</div></div></div>
+              <div className="sold-breakdown"><div><div className="micro-label">Vendido en {month}</div><div className="micro-value">{money(isConnected ? data.businessSold : undefined, currency)}</div></div><div><div className="micro-label">Saldo pendiente actual</div><div className="micro-value">{money(isConnected ? data.receivable : undefined, currency)}</div></div></div>
             </article>
           </section>
 
+          {isConnected && <MonthlyAnalytics month={data.selectedMonth} currentMonth={currentMonth} currency={currency} points={data.monthlySeries} previousTotals={data.previousTotals} />}
+
           <section id="personal">
-            <div className="section-title-row"><h2 className="section-title">Tu plata personal</h2><span className="section-subtitle">Ingresos y gastos del mes</span></div>
+            <div className="section-title-row"><h2 className="section-title">Tu plata personal</h2><span className="section-subtitle">Ingresos y gastos de {month}</span></div>
             <div className="personal-grid">
-              <Metric title="Ingresos" value={money(isConnected ? data.personalIncome : undefined, currency)} foot="Registrados este mes" kind="income" />
-              <Metric title="Gastos" value={money(isConnected ? data.personalExpenses : undefined, currency)} foot="Registrados este mes" kind="expense" />
-              <Metric title="Balance del mes" value={money(isConnected ? data.personalBalance : undefined, currency)} foot="Ingresos menos gastos" />
+              <Metric title="Ingresos" value={money(isConnected ? data.personalIncome : undefined, currency)} foot={`En ${month}`} kind="income" />
+              <Metric title="Gastos" value={money(isConnected ? data.personalExpenses : undefined, currency)} foot={`En ${month}`} kind="expense" />
+              <Metric title="Balance del mes" value={money(isConnected ? data.personalBalance : undefined, currency)} foot={`Ingresos menos gastos · ${month}`} />
               <Metric title="Deuda pendiente" value={money(isConnected ? data.outstandingDebt : undefined, currency)} foot="Saldo de deudas activas" kind="debt" />
-              <Metric title="Pagado de deuda" value={money(isConnected ? data.debtPaidMonth : undefined, currency)} foot="Durante este mes" kind="income" />
+              <Metric title="Pagado de deuda" value={money(isConnected ? data.debtPaidMonth : undefined, currency)} foot={`Durante ${month}`} kind="income" />
               <Metric title="Deuda cancelada" value={isConnected ? `${data.debtCancellationPercent}%` : "—"} foot="Progreso total" />
               <Metric title="Fondo de emergencia" value={money(isConnected ? data.emergencyFund : undefined, currency)} foot={isConnected ? `Objetivo ${money(data.emergencyFundTarget, currency)}` : "Saldo registrado"} />
             </div>
@@ -126,11 +133,11 @@ async function DashboardContent({ searchParams }: { searchParams: Promise<Record
           <section id="negocio">
             <div className="section-title-row"><h2 className="section-title">La fábrica</h2><span className="section-subtitle">Separado de tus finanzas personales</span></div>
             <div className="business-strip">
-              <div className="business-item"><span className="business-label">Cobrado este mes</span><strong className="business-value">{money(isConnected ? data.businessCollected : undefined, currency)}</strong></div>
-              <div className="business-item"><span className="business-label">Gastos del mes</span><strong className="business-value">{money(isConnected ? data.businessExpenses : undefined, currency)}</strong></div>
-              <div className="business-item"><span className="business-label">Pendiente de cobro</span><strong className="business-value pending">{money(isConnected ? data.receivable : undefined, currency)}</strong></div>
-              <div className="business-item"><span className="business-label">Deuda a proveedores</span><strong className="business-value pending">{money(isConnected ? data.supplierDebtTotal : undefined, currency)}</strong></div>
-              <div className="business-item"><span className="business-label">Caja disponible</span><strong className="business-value">{money(isConnected ? data.businessCash : undefined, currency)}</strong></div>
+              <div className="business-item"><span className="business-label">Cobrado en {month}</span><strong className="business-value">{money(isConnected ? data.businessCollected : undefined, currency)}</strong></div>
+              <div className="business-item"><span className="business-label">Gastos de {month}</span><strong className="business-value">{money(isConnected ? data.businessExpenses : undefined, currency)}</strong></div>
+              <div className="business-item"><span className="business-label">Pendiente actual de cobro</span><strong className="business-value pending">{money(isConnected ? data.receivable : undefined, currency)}</strong></div>
+              <div className="business-item"><span className="business-label">Deuda actual a proveedores</span><strong className="business-value pending">{money(isConnected ? data.supplierDebtTotal : undefined, currency)}</strong></div>
+              <div className="business-item"><span className="business-label">Caja disponible hoy</span><strong className="business-value">{money(isConnected ? data.businessCash : undefined, currency)}</strong></div>
             </div>
           </section>
 

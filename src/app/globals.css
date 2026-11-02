@@ -978,6 +978,68 @@ body:has(.service-dialog[open]) { overflow: hidden; }
 .service-extra-fields { padding-top: 13px; border-top: 1px solid #eee2d8; }
 .service-extra-fields summary { min-height: 30px; margin-bottom: 8px; color: #9b8173; font-size: 12px; cursor: pointer; }
 .service-editor-form .primary-button { min-height: 49px; font-size: 14px; }
+.monthly-analytics { position: relative; overflow: hidden; margin: 23px 0 4px; padding: 25px 27px 22px; border: 1px solid #e4dad2; border-radius: 18px; background: linear-gradient(145deg, #fffdfa 0%, #fdf9f4 72%, #f8f1eb 100%); box-shadow: 0 14px 36px #3923180b; }
+.monthly-analytics::before { position: absolute; inset: 0 auto 0 0; width: 4px; background: linear-gradient(180deg, var(--brand), #d8a767); content: ""; }
+.analytics-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 22px; padding-bottom: 20px; }
+.analytics-heading-row .eyebrow { color: #9b714e; }
+.analytics-heading-row h2 { margin: 7px 0 5px; font-family: var(--font-display); font-size: clamp(24px, 2.5vw, 32px); font-weight: 500; letter-spacing: -.045em; }
+.analytics-heading-row p { margin: 0; color: #827970; font-size: 13px; }
+.analytics-month-nav { display: flex; align-items: center; gap: 10px; padding: 6px; border: 1px solid #e8ded6; border-radius: 13px; background: #fff; }
+.analytics-month-nav > a:not(.month-nav-current), .month-nav-disabled { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 9px; color: #514740; font-family: var(--font-display); font-size: 27px; line-height: 1; }
+.analytics-month-nav > a:not(.month-nav-current):hover { background: #f8edef; color: var(--brand); }
+.analytics-month-nav strong { min-width: 136px; color: #332d28; text-align: center; font-size: 14px; font-weight: 700; text-transform: capitalize; }
+.month-nav-disabled { color: #c7beb6; }
+.analytics-month-nav .month-nav-current { min-height: 38px; display: inline-flex; align-items: center; padding: 0 11px; border-radius: 8px; background: #f8f1e9; color: #805f42; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.analytics-comparison-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.analytics-stat { min-width: 0; display: grid; gap: 10px; padding: 15px 15px 13px; border: 1px solid #ebe4dd; border-radius: 12px; background: #fff; }
+.analytics-stat-label { display: flex; align-items: center; gap: 8px; color: #777067; font-size: 11px; font-weight: 650; }
+.analytics-stat-label i { width: 8px; height: 8px; flex: 0 0 auto; border-radius: 50%; background: #777; }
+.analytics-stat.income .analytics-stat-label i { background: #287659; }
+.analytics-stat.personal-expense .analytics-stat-label i { background: #c39a63; }
+.analytics-stat.business-income .analytics-stat-label i { background: var(--brand); }
+.analytics-stat.business-sales .analytics-stat-label i { background: #718092; }
+.analytics-stat.business-expense .analytics-stat-label i { background: #766c65; }
+.analytics-stat > strong { overflow: hidden; color: #302a25; font-family: var(--font-display); font-size: clamp(20px, 2vw, 27px); font-weight: 500; letter-spacing: -.04em; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.analytics-stat-foot { display: grid; gap: 4px; padding-top: 9px; border-top: 1px solid #f0ebe6; color: #968d84; font-size: 10px; }
+.change-positive { color: #287659; font-weight: 700; }
+.change-negative { color: #a36c20; font-weight: 700; }
+.change-neutral { color: #898179; font-weight: 650; }
+.analytics-chart-panel { margin-top: 14px; padding: 16px 17px 12px; border: 1px solid #ebe4dd; border-radius: 13px; background: #fff; }
+.analytics-chart-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 1px 2px 9px; }
+.analytics-chart-heading > div { display: grid; gap: 4px; }
+.analytics-chart-heading strong { color: #453c35; font-size: 13px; }
+.analytics-chart-heading span { color: #968d84; font-size: 10px; }
+.analytics-period-stamp { padding: 6px 9px; border-radius: 7px; background: #f7f2ec; color: #887969 !important; font-size: 10px !important; font-weight: 750; letter-spacing: .08em; }
+.monthly-chart-scroll { overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-color: #d9c9bd transparent; scrollbar-width: thin; }
+.monthly-chart-svg { display: block; width: 100%; min-width: 550px; height: auto; }
+.monthly-chart-gridline { stroke: #eee9e4; stroke-width: 1; }
+.monthly-chart-axis { fill: #a1978e; font-family: var(--font-ui); font-size: 10px; }
+.monthly-chart-month { fill: #746b63; font-family: var(--font-ui); font-size: 11px; font-weight: 650; text-transform: capitalize; }
+.monthly-chart-legend { display: flex; flex-wrap: wrap; gap: 9px 19px; padding: 7px 4px 1px; }
+.monthly-chart-legend span { display: inline-flex; align-items: center; gap: 7px; color: #736c64; font-size: 10px; }
+.monthly-chart-legend i { width: 8px; height: 8px; border-radius: 2px; }
+@media (max-width: 900px) { .analytics-comparison-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 700px) {
+  .monthly-analytics { margin: 17px -2px 4px; padding: 19px 13px 14px 17px; border-radius: 14px; }
+  .analytics-heading-row { align-items: flex-start; flex-direction: column; gap: 15px; padding-bottom: 15px; }
+  .analytics-heading-row h2 { font-size: 27px; }
+  .analytics-heading-row p { font-size: 12px; line-height: 1.45; }
+  .analytics-month-nav { width: 100%; justify-content: center; gap: 8px; }
+  .analytics-month-nav > a:not(.month-nav-current), .month-nav-disabled { width: 42px; height: 42px; }
+  .analytics-month-nav strong { flex: 1; min-width: 0; font-size: 14px; }
+  .analytics-month-nav .month-nav-current { min-height: 42px; padding-inline: 9px; }
+  .analytics-comparison-grid { gap: 8px; }
+  .analytics-stat { gap: 8px; padding: 12px 10px; }
+  .analytics-stat-label { align-items: flex-start; font-size: 10px; line-height: 1.35; }
+  .analytics-stat > strong { font-size: clamp(17px, 5vw, 22px); }
+  .analytics-stat-foot { font-size: 9px; }
+  .analytics-chart-panel { margin-top: 10px; padding: 13px 9px 11px; }
+  .analytics-chart-heading strong { font-size: 12px; }
+  .analytics-chart-heading span { font-size: 9px; }
+  .monthly-chart-svg { min-width: 515px; }
+  .monthly-chart-legend { gap: 9px 12px; }
+  .monthly-chart-legend span { font-size: 9px; }
+}
 .bulk-payment-hint { margin: 4px 0 13px; color: #817970; font-size: 13px; }
 .bulk-order-select { display: flex; align-items: center; gap: 9px; width: fit-content; margin: 0 0 12px; color: #6f675f; font-size: 12px; font-weight: 650; cursor: pointer; }
 .bulk-order-select input { width: 20px; height: 20px; margin: 0; accent-color: var(--brand); cursor: pointer; }

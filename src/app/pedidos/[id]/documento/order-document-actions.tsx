@@ -49,9 +49,12 @@ export function OrderDocumentActions({ orderNumber, message }: { orderNumber: st
   async function shareWhatsApp() {
     setBusy(true); setStatus("");
     const useNativeWhatsApp = isMobileDevice();
-    const whatsappUrl = useNativeWhatsApp
-      ? `https://wa.me/?text=${encodeURIComponent(text)}`
-      : `https://web.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    const encodedText = encodeURIComponent(text);
+    const whatsappUrl = /Android/i.test(navigator.userAgent)
+      ? `intent://send?text=${encodedText}#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=${encodeURIComponent(`https://wa.me/?text=${encodedText}`)};end`
+      : useNativeWhatsApp
+        ? `whatsapp://send?text=${encodedText}`
+        : `https://web.whatsapp.com/send?text=${encodedText}`;
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     try {
       const blob = await makeImage();
